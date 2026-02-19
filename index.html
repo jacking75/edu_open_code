@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Open Code — 바이브 코딩을 위한 오픈 기술</title>
+
+  <!-- ✅ 인라인 SVG 파비콘 -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FF6B35'/%3E%3Ctext x='50%25' y='56%25' dominant-baseline='middle' text-anchor='middle' font-size='38' font-family='monospace' fill='white'%3E%3C/%3E%3C/text%3E%3C/svg%3E" />
+
+  <style>
+    /* ── Reset ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0a0f;
+      --surface:  #111118;
+      --card:     #17171f;
+      --border:   #27273a;
+      --accent:   #ff6b35;
+      --accent2:  #ff9a6c;
+      --green:    #3ddc84;
+      --blue:     #60a5fa;
+      --purple:   #a78bfa;
+      --text:     #f0f0f8;
+      --muted:    #7070a0;
+      --radius:   13px;
+      --font:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono:     'Fira Code', 'Cascadia Code', 'SFMono-Regular', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* ── Header ─────────────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--text);
+      letter-spacing: -.01em;
+    }
+
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 1rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 26px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted);
+      font-size: 0.875rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    .nav-pill {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      background: rgba(255, 107, 53, .15);
+      color: var(--accent2);
+      border: 1px solid rgba(255, 107, 53, .35);
+      padding: 4px 12px;
+      border-radius: 99px;
+    }
+
+    /* ── Hero ───────────────────────────────── */
+    .hero {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 108px 24px 88px;
+      text-align: center;
+      position: relative;
+    }
+
+    /* 배경 glow */
+    .hero::before {
+      content: '';
+      position: absolute;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(255,107,53,.12) 0%, transparent 65%);
+      top: 0; left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.77rem;
+      color: var(--accent);
+      border: 1px solid rgba(255,107,53,.3);
+      border-radius: 99px;
+      padding: 5px 16px;
+      margin-bottom: 30px;
+      letter-spacing: .05em;
+    }
+    .hero-eyebrow .dot {
+      width: 7px; height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: blink 2s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%,100% { opacity: 1; }
+      50%      { opacity: .25; }
+    }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 5.8vw, 3.8rem);
+      font-weight: 900;
+      line-height: 1.12;
+      letter-spacing: -.03em;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .hero h1 .line-plain { display: block; color: var(--text); }
+    .hero h1 .line-grad  {
+      display: block;
+      background: linear-gradient(90deg, var(--accent) 0%, var(--purple) 55%, var(--blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      font-size: 1.05rem;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto 44px;
+    }
+
+    .hero-btns {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 12px 26px;
+      border-radius: 9px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      text-decoration: none !important;
+      transition: transform .16s, filter .16s;
+    }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.12); }
+
+    .btn-orange {
+      background: linear-gradient(135deg, var(--accent), #ff8c5a);
+      color: #fff;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent2); }
+
+    /* ── Ticker ─────────────────────────────── */
+    .ticker-wrap {
+      overflow: hidden;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      padding: 11px 0;
+      margin-bottom: 88px;
+    }
+    .ticker {
+      display: flex;
+      gap: 56px;
+      width: max-content;
+      animation: scroll 32s linear infinite;
+      white-space: nowrap;
+    }
+    @keyframes scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .ticker span {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .ticker .o  { color: var(--accent); }
+    .ticker .g  { color: var(--green); }
+    .ticker .p  { color: var(--purple); }
+    .ticker .b  { color: var(--blue); }
+
+    /* ── Sections ───────────────────────────── */
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 92px;
+    }
+
+    .sec-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .sec-title {
+      font-size: 1.7rem;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin-bottom: 8px;
+    }
+    .sec-sub {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 38px;
+    }
+
+    /* ── Grid ───────────────────────────────── */
+    .grid { display: grid; gap: 18px; }
+    .col-3 { grid-template-columns: repeat(auto-fill, minmax(295px, 1fr)); }
+    .col-2 { grid-template-columns: repeat(auto-fill, minmax(420px, 1fr)); }
+
+    /* ── Topic Card ─────────────────────────── */
+    .t-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .22s, transform .22s, box-shadow .22s;
+    }
+    .t-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-5px);
+      box-shadow: 0 10px 36px rgba(255,107,53,.1);
+    }
+
+    /* 카드 상단 컬러 라인 */
+    .t-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--purple));
+      opacity: 0;
+      transition: opacity .22s;
+    }
+    .t-card:hover::before { opacity: 1; }
+
+    .t-card .ico { font-size: 2rem; margin-bottom: 14px; display: block; }
+    .t-card h3   { font-size: 1rem; font-weight: 700; margin-bottom: 9px; }
+    .t-card p    { font-size: 0.84rem; color: var(--muted); line-height: 1.65; }
+
+    .tag {
+      display: inline-block;
+      margin-top: 14px;
+      font-size: 0.69rem;
+      font-family: var(--mono);
+      color: var(--accent);
+      background: rgba(255,107,53,.1);
+      border: 1px solid rgba(255,107,53,.25);
+      padding: 2px 10px;
+      border-radius: 99px;
+    }
+
+    /* ── Road Card ──────────────────────────── */
+    .r-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 26px;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+      transition: border-color .22s, transform .22s;
+    }
+    .r-card:hover { border-color: var(--green); transform: translateY(-3px); }
+
+    .r-num {
+      flex-shrink: 0;
+      width: 42px; height: 42px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), #c0392b);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 1rem;
+      color: #fff;
+    }
+    .r-card h3 { font-size: 0.98rem; font-weight: 700; margin-bottom: 7px; }
+    .r-card p  { font-size: 0.83rem; color: var(--muted); line-height: 1.6; }
+
+    /* ── Tool Chip Row ──────────────────────── */
+    .tool-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 36px;
+    }
+    .tool-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      font-size: 0.82rem;
+      color: var(--muted);
+      font-family: var(--mono);
+      transition: border-color .2s, color .2s;
+    }
+    .tool-chip:hover { border-color: var(--accent); color: var(--text); }
+    .tool-chip .dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+    .tool-chip .dot.g { background: var(--green); }
+    .tool-chip .dot.b { background: var(--blue); }
+    .tool-chip .dot.p { background: var(--purple); }
+
+    /* ── CTA Box ────────────────────────────── */
+    .cta-wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 92px;
+    }
+    .cta-box {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #1a100a 0%, #0e0e18 60%);
+      border: 1px solid rgba(255,107,53,.3);
+      border-radius: var(--radius);
+      padding: 60px 32px;
+      text-align: center;
+    }
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, rgba(255,107,53,.18), transparent 68%);
+      top: -120px; right: -80px;
+      pointer-events: none;
+    }
+    .cta-box::after {
+      content: '';
+      position: absolute;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(167,139,250,.12), transparent 68%);
+      bottom: -80px; left: -60px;
+      pointer-events: none;
+    }
+    .cta-box h2 {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+      position: relative;
+    }
+    .cta-box p {
+      color: var(--muted);
+      font-size: 0.93rem;
+      max-width: 440px;
+      margin: 0 auto 30px;
+      position: relative;
+    }
+    .input-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+    }
+    .input-row input {
+      padding: 11px 18px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.88rem;
+      width: 248px;
+      outline: none;
+      transition: border-color .2s;
+    }
+    .input-row input:focus { border-color: var(--accent); }
+    .input-row input::placeholder { color: var(--muted); }
+
+    /* ── Footer ─────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 34px 24px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    /* ── Responsive ─────────────────────────── */
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .hero { padding: 76px 20px 60px; }
+      .col-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header>
+  <nav>
+    <div class="logo">
+      <div class="logo-mark">&lt;/&gt;</div>
+      Open Code
+    </div>
+    <ul class="nav-links">
+      <li><a href="#topics">주제</a></li>
+      <li><a href="#roadmap">로드맵</a></li>
+      <li><a href="#tools">도구</a></li>
+    </ul>
+    <span class="nav-pill">준비 중</span>
+  </nav>
+</header>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="dot"></span>
+    Vibe Coding × Open Source
+  </div>
+
+  <h1>
+    <span class="line-plain">바이브 코딩을 위한</span>
+    <span class="line-grad">Open Code 기술</span>
+  </h1>
+
+  <p class="hero-desc">
+    오픈소스 LLM, 로컬 AI 도구, 오픈 프레임워크를 활용해
+    누구나 자유롭게 흐름(vibe)에 빠져드는 코딩 환경을 만드는 법을 정리합니다.
+  </p>
+
+  <div class="hero-btns">
+    <a href="#topics" class="btn btn-orange">🔍 주제 미리보기</a>
+    <a href="https://github.com" target="_blank" class="btn btn-ghost">🐙 GitHub</a>
+  </div>
+</section>
+
+<!-- ══════════════ TICKER ══════════════ -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span><span class="o">open</span>(<span class="g">model</span>) → <span class="p">vibe_code</span>()</span>
+    <span><span class="b">Ollama</span> · LM Studio · <span class="g">LocalAI</span></span>
+    <span><span class="o">git clone</span> https://github.com/…</span>
+    <span><span class="p">Continue.dev</span> + <span class="g">CodeLlama</span></span>
+    <span><span class="b">MIT License</span> · <span class="o">Apache 2.0</span> · Open Weights</span>
+    <span><span class="g">llama.cpp</span> / <span class="p">whisper</span> / <span class="o">stable-code</span></span>
+    <!-- 복제 (무한 루프) -->
+    <span><span class="o">open</span>(<span class="g">model</span>) → <span class="p">vibe_code</span>()</span>
+    <span><span class="b">Ollama</span> · LM Studio · <span class="g">LocalAI</span></span>
+    <span><span class="o">git clone</span> https://github.com/…</span>
+    <span><span class="p">Continue.dev</span> + <span class="g">CodeLlama</span></span>
+    <span><span class="b">MIT License</span> · <span class="o">Apache 2.0</span> · Open Weights</span>
+    <span><span class="g">llama.cpp</span> / <span class="p">whisper</span> / <span class="o">stable-code</span></span>
+  </div>
+</div>
+
+<!-- ══════════════ TOPICS ══════════════ -->
+<div class="wrap" id="topics">
+  <p class="sec-eyebrow">// topics</p>
+  <h2 class="sec-title">다룰 주제들</h2>
+  <p class="sec-sub">오픈소스 생태계를 활용한 바이브 코딩 핵심 기술을 카테고리별로 정리합니다.</p>
+
+  <div class="grid col-3">
+
+    <div class="t-card">
+      <span class="ico">🦙</span>
+      <h3>로컬 LLM 셋업</h3>
+      <p>Ollama, LM Studio, llama.cpp로 내 PC에 AI 코딩 어시스턴트를 직접 구동하는 방법과 모델 선택 기준을 다룹니다.</p>
+      <span class="tag">ollama · gguf · local</span>
+    </div>
+
+    <div class="t-card">
+      <span class="ico">🔌</span>
+      <h3>Continue.dev 완전 활용</h3>
+      <p>VS Code / JetBrains에서 오픈소스 AI 자동 완성과 채팅을 제공하는 Continue.dev의 설정부터 커스텀 모델 연결까지 안내합니다.</p>
+      <span class="tag">continue · vscode · chat</span>
+    </div>
+
+    <div class="t-card">
+      <span class="ico">🤖</span>
+      <h3>오픈 코딩 모델 비교</h3>
+      <p>DeepSeek-Coder, CodeLlama, Qwen-Coder, StarCoder2 등 오픈 웨이트 코딩 모델의 성능과 특징을 실전 기준으로 비교합니다.</p>
+      <span class="tag">deepseek · codellama · qwen</span>
+    </div>
+
+    <div class="t-card">
+      <span class="ico">⚙️</span>
+      <h3>오픈소스 에이전트 구축</h3>
+      <p>OpenHands, Aider, SWE-agent 같은 오픈소스 코딩 에이전트를 로컬 또는 셀프호스트 환경에서 실행하는 방법을 정리합니다.</p>
+      <span class="tag">aider · openhands · agent</span>
+    </div>
+
+    <div class="t-card">
+      <span class="ico">🏗️</span>
+      <h3>오픈 RAG & 컨텍스트</h3>
+      <p>코드베이스를 벡터 DB에 인덱싱해 에이전트가 프로젝트 전체를 이해하도록 만드는 오픈소스 RAG 파이프라인을 다룹니다.</p>
+      <span class="tag">rag · chroma · embedding</span>
+    </div>
+
+    <div class="t-card">
+      <span class="ico">🚀</span>
+      <h3>셀프호스트 & 프라이버시</h3>
+      <p>클라우드 의존 없이 내 인프라에서 AI 코딩 환경을 완전하게 운영하는 아키텍처와 보안 고려사항을 살펴봅니다.</p>
+      <span class="tag">self-host · privacy · docker</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════ ROADMAP ══════════════ -->
+<div class="wrap" id="roadmap">
+  <p class="sec-eyebrow">// roadmap</p>
+  <h2 class="sec-title">콘텐츠 로드맵</h2>
+  <p class="sec-sub">이 순서로 글을 작성할 계획입니다.</p>
+
+  <div class="grid col-2">
+
+    <div class="r-card">
+      <div class="r-num">1</div>
+      <div>
+        <h3>Ollama로 5분 만에 로컬 AI 코딩 환경 만들기</h3>
+        <p>설치부터 첫 코드 자동 완성까지, 가장 빠르게 오픈 코드 환경을 시작하는 핸즈온 가이드입니다.</p>
+      </div>
+    </div>
+
+    <div class="r-card">
+      <div class="r-num">2</div>
+      <div>
+        <h3>Continue.dev × DeepSeek-Coder 조합 설정법</h3>
+        <p>현재 오픈소스 코딩 모델 중 가장 주목받는 조합으로 VS Code에 자동 완성 환경을 구성하는 방법입니다.</p>
+      </div>
+    </div>
+
+    <div class="r-card">
+      <div class="r-num">3</div>
+      <div>
+        <h3>Aider로 터미널에서 바이브 코딩하기</h3>
+        <p>CLI 기반 오픈소스 에이전트 Aider를 사용해 자연어로 코드 수정·기능 추가를 처리하는 실전 워크플로우입니다.</p>
+      </div>
+    </div>
+
+    <div class="r-card">
+      <div class="r-num">4</div>
+      <div>
+        <h3>로컬 코드베이스 RAG 파이프라인 구축</h3>
+        <p>내 프로젝트 전체를 AI가 이해하도록 ChromaDB + 로컬 임베딩 모델로 벡터 인덱스를 만드는 오픈소스 RAG 가이드입니다.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════ TOOLS ══════════════ -->
+<div class="wrap" id="tools">
+  <p class="sec-eyebrow">// open tools</p>
+  <h2 class="sec-title">다룰 오픈소스 도구</h2>
+  <p class="sec-sub">이 사이트에서 다룰 주요 오픈소스 프로젝트들입니다.</p>
+
+  <div class="tool-row">
+    <span class="tool-chip"><span class="dot o"></span>Ollama</span>
+    <span class="tool-chip"><span class="dot g"></span>Continue.dev</span>
+    <span class="tool-chip"><span class="dot p"></span>Aider</span>
+    <span class="tool-chip"><span class="dot b"></span>llama.cpp</span>
+    <span class="tool-chip"><span class="dot o"></span>LM Studio</span>
+    <span class="tool-chip"><span class="dot g"></span>OpenHands</span>
+    <span class="tool-chip"><span class="dot p"></span>DeepSeek-Coder</span>
+    <span class="tool-chip"><span class="dot b"></span>StarCoder2</span>
+    <span class="tool-chip"><span class="dot o"></span>Qwen-Coder</span>
+    <span class="tool-chip"><span class="dot g"></span>ChromaDB</span>
+    <span class="tool-chip"><span class="dot p"></span>LangChain</span>
+    <span class="tool-chip"><span class="dot b"></span>LocalAI</span>
+  </div>
+</div>
+
+<!-- ══════════════ CTA ══════════════ -->
+<div class="cta-wrap">
+  <div class="cta-box">
+    <h2>✍️ 첫 번째 글, 곧 올라옵니다</h2>
+    <p>사이트가 막 시작됐습니다. 새 글이 게시되면 알림을 받고 싶으시면 이메일을 남겨주세요.</p>
+    <div class="input-row">
+      <input type="email" placeholder="your@email.com" />
+      <button
+        class="btn btn-orange"
+        onclick="this.textContent='✅ 등록됐어요!'; this.disabled=true;">
+        알림 받기
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <p>
+    Open Code · 바이브 코딩을 위한 오픈 기술 ·
+    Built on <a href="https://pages.github.com" target="_blank">GitHub Pages</a>
+    · 2026
+  </p>
+</footer>
+
+</body>
+</html>
