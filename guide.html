@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenCode 설치 및 사용 가이드 — Open Code</title>
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FF6B35'/%3E%3Crect x='10' y='14' width='44' height='38' rx='6' fill='%23FF8C5A'/%3E%3Crect x='29' y='6' width='6' height='10' rx='3' fill='white'/%3E%3Ccircle cx='32' cy='5' r='5' fill='white'/%3E%3Crect x='14' y='20' width='12' height='10' rx='3' fill='%230a0a0f'/%3E%3Crect x='38' y='20' width='12' height='10' rx='3' fill='%230a0a0f'/%3E%3Ccircle cx='20' cy='25' r='4' fill='%2360a5fa'/%3E%3Ccircle cx='44' cy='25' r='4' fill='%2360a5fa'/%3E%3Crect x='14' y='36' width='36' height='10' rx='3' fill='%230a0a0f'/%3E%3Crect x='21' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3Crect x='31' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3Crect x='41' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3C/svg%3E" />
+
+  <style>
+    /* ── Reset ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0a0f;
+      --surface:  #111118;
+      --card:     #17171f;
+      --border:   #27273a;
+      --accent:   #ff6b35;
+      --accent2:  #ff9a6c;
+      --green:    #3ddc84;
+      --blue:     #60a5fa;
+      --purple:   #a78bfa;
+      --text:     #f0f0f8;
+      --muted:    #7070a0;
+      --radius:   13px;
+      --font:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono:     'Fira Code', 'Cascadia Code', 'SFMono-Regular', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* ── Header ─────────────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--text);
+      letter-spacing: -.01em;
+      text-decoration: none !important;
+    }
+    .logo:hover { text-decoration: none !important; }
+
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 1rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 26px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted);
+      font-size: 0.875rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    .nav-pill {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      background: rgba(255, 107, 53, .15);
+      color: var(--accent2);
+      border: 1px solid rgba(255, 107, 53, .35);
+      padding: 4px 12px;
+      border-radius: 99px;
+    }
+
+    /* ── Layout ─────────────────────────────── */
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 64px 24px 100px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    /* ── Sidebar TOC ─────────────────────────── */
+    .toc {
+      position: sticky;
+      top: 84px;
+    }
+
+    .toc-title {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .toc-list {
+      list-style: none;
+      border-left: 2px solid var(--border);
+      padding-left: 16px;
+    }
+
+    .toc-list li { margin-bottom: 2px; }
+
+    .toc-list a {
+      color: var(--muted);
+      font-size: 0.82rem;
+      display: block;
+      padding: 5px 0;
+      transition: color .2s;
+      line-height: 1.4;
+    }
+    .toc-list a:hover { color: var(--text); text-decoration: none; }
+    .toc-list .toc-sub {
+      padding-left: 12px;
+      font-size: 0.77rem;
+    }
+
+    /* ── Main Content ─────────────────────────── */
+    .content { min-width: 0; }
+
+    .page-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .page-title {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 900;
+      letter-spacing: -.03em;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+
+    .page-lead {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 52px;
+      padding-bottom: 36px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Section titles ─────────────────────────── */
+    .guide-section { margin-bottom: 64px; }
+
+    .guide-section h2 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sec-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, var(--accent), #c0392b);
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 900;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .guide-section h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 28px 0 12px;
+    }
+
+    .guide-section h4 {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--accent2);
+      margin: 20px 0 10px;
+      font-family: var(--mono);
+    }
+
+    .guide-section p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.78;
+      margin-bottom: 14px;
+    }
+
+    .guide-section strong { color: var(--text); font-weight: 700; }
+
+    .guide-section ul, .guide-section ol {
+      padding-left: 20px;
+      margin-bottom: 14px;
+    }
+    .guide-section li {
+      font-size: 0.87rem;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 6px;
+    }
+    .guide-section li strong { color: var(--text); }
+
+    /* ── Code blocks ─────────────────────────── */
+    .code-wrap {
+      position: relative;
+      margin: 16px 0;
+    }
+
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.83rem;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.85em;
+      background: rgba(255,255,255,.07);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--accent2);
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      font-size: inherit;
+      color: inherit;
+      border-radius: 0;
+    }
+
+    /* syntax highlight helpers */
+    .kw  { color: var(--purple); }
+    .cm  { color: var(--muted); font-style: italic; }
+    .st  { color: var(--green); }
+    .nu  { color: var(--blue); }
+    .op  { color: var(--accent2); }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px; right: 12px;
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 3px 10px;
+      cursor: pointer;
+      transition: color .2s, border-color .2s;
+    }
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ── Tables ─────────────────────────────── */
+    .table-wrap { overflow-x: auto; margin: 18px 0; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      background: var(--surface);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.78rem;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 11px 14px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      color: var(--muted);
+      vertical-align: top;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(255,255,255,.02); }
+    tbody td strong { color: var(--text); }
+    tbody td:first-child { color: var(--text); }
+
+    /* ── Callout boxes ─────────────────────────── */
+    .callout {
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.72;
+      margin: 18px 0;
+    }
+    .callout strong { font-weight: 700; }
+    .callout p { margin: 0; font-size: inherit; }
+
+    .callout.info {
+      background: rgba(96,165,250,.07);
+      border: 1px solid rgba(96,165,250,.22);
+      color: #93c5fd;
+    }
+    .callout.warn {
+      background: rgba(239,68,68,.07);
+      border: 1px solid rgba(239,68,68,.22);
+      color: #fca5a5;
+    }
+    .callout.tip {
+      background: rgba(61,220,132,.07);
+      border: 1px solid rgba(61,220,132,.22);
+      color: #6ee7b7;
+    }
+
+    /* ── Provider cards ─────────────────────────── */
+    .provider-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+      margin: 20px 0;
+    }
+
+    .prov-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      transition: border-color .22s, transform .2s;
+    }
+    .prov-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+
+    .prov-card .prov-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .prov-card .prov-icon { font-size: 1.4rem; }
+    .prov-card .prov-name { font-weight: 800; font-size: 0.95rem; color: var(--text); }
+    .prov-card .prov-badge {
+      margin-left: auto;
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      color: var(--accent);
+      background: rgba(255,107,53,.1);
+      border: 1px solid rgba(255,107,53,.22);
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+    .prov-card .prov-badge.free { color: var(--green); background: rgba(61,220,132,.08); border-color: rgba(61,220,132,.2); }
+    .prov-card p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.65;
+      margin: 0;
+    }
+
+    /* ── Step list ─────────────────────────── */
+    .step-list { list-style: none; padding: 0; margin: 16px 0; counter-reset: steps; }
+    .step-list li {
+      counter-increment: steps;
+      display: flex;
+      gap: 14px;
+      margin-bottom: 16px;
+      align-items: flex-start;
+    }
+    .step-list li::before {
+      content: counter(steps);
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      background: linear-gradient(135deg, var(--accent), #c0392b);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.78rem;
+      font-weight: 900;
+      color: #fff;
+      margin-top: 2px;
+    }
+    .step-list li div { flex: 1; }
+    .step-list li .step-title {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .step-list li .step-body {
+      font-size: 0.83rem;
+      color: var(--muted);
+      line-height: 1.68;
+      margin: 0;
+    }
+
+    /* ── Command table ─────────────────────────── */
+    .cmd-row {
+      display: flex;
+      align-items: baseline;
+      gap: 16px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .cmd-row:last-child { border-bottom: none; }
+    .cmd-key {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--accent2);
+      background: rgba(255,107,53,.08);
+      border: 1px solid rgba(255,107,53,.2);
+      padding: 3px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 140px;
+      text-align: center;
+    }
+    .cmd-desc {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .cmd-desc strong { color: var(--text); }
+
+    /* ── Back btn ─────────────────────────── */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 0.83rem;
+      margin-bottom: 36px;
+      transition: color .2s;
+    }
+    .back-btn:hover { color: var(--text); text-decoration: none; }
+
+    /* ── Footer ─────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 34px 24px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    /* ── Responsive ─────────────────────────── */
+    @media (max-width: 768px) {
+      .page-wrap {
+        grid-template-columns: 1fr;
+        padding: 40px 20px 80px;
+      }
+      .toc { display: none; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header>
+  <nav>
+    <a href="index.html" class="logo">
+      <div class="logo-mark">&lt;/&gt;</div>
+      Open Code
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html#opencode">OpenCode 소개</a></li>
+      <li><a href="index.html#topics">주제</a></li>
+      <li><a href="index.html#roadmap">로드맵</a></li>
+      <li><a href="index.html#tools">도구</a></li>
+    </ul>
+    <span class="nav-pill">Guide</span>
+  </nav>
+</header>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="page-wrap">
+
+  <!-- TOC Sidebar -->
+  <aside class="toc">
+    <p class="toc-title">// 목차</p>
+    <ul class="toc-list">
+      <li><a href="#install">1. 설치하기</a></li>
+      <li><a href="#install-script" class="toc-sub">└ 공식 스크립트</a></li>
+      <li><a href="#install-pkg" class="toc-sub">└ 패키지 매니저</a></li>
+      <li><a href="#install-docker" class="toc-sub">└ Docker</a></li>
+      <li><a href="#install-app" class="toc-sub">└ 데스크톱 앱</a></li>
+      <li><a href="#provider">2. AI 제공자 설정</a></li>
+      <li><a href="#prov-copilot" class="toc-sub">└ GitHub Copilot</a></li>
+      <li><a href="#prov-zen" class="toc-sub">└ OpenCode Zen</a></li>
+      <li><a href="#prov-router" class="toc-sub">└ OpenRouter</a></li>
+      <li><a href="#prov-anthropic" class="toc-sub">└ Anthropic API</a></li>
+      <li><a href="#prov-local" class="toc-sub">└ 로컬 모델</a></li>
+      <li><a href="#prov-summary" class="toc-sub">└ 비교 요약</a></li>
+      <li><a href="#init">3. 프로젝트 초기화</a></li>
+      <li><a href="#agents-md">4. AGENTS.md 작성</a></li>
+      <li><a href="#commands">5. 주요 명령어</a></li>
+      <li><a href="#examples">6. 사용 예시</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <a href="index.html" class="back-btn">← 홈으로 돌아가기</a>
+
+    <p class="page-eyebrow">// opencode.ai 완전 가이드</p>
+    <h1 class="page-title">🛠️ OpenCode<br>설치 및 사용 가이드</h1>
+    <p class="page-lead">
+      <strong>OpenCode</strong>는 터미널에서 실행되는 AI 기반 코딩 에이전트입니다.
+      75개 이상의 AI 제공자를 지원하며 코드 분석, 기능 추가, 버그 수정 등
+      다양한 작업을 자연어 명령 하나로 처리할 수 있습니다.
+    </p>
+
+    <!-- ── 1. 설치 ── -->
+    <section class="guide-section" id="install">
+      <h2><span class="sec-badge">1</span> 설치하기</h2>
+
+      <h3>사전 준비 — 권장 터미널</h3>
+      <p>
+        OpenCode는 최신 터미널 에뮬레이터에서 최적화된 TUI를 제공합니다.
+        CMD·PowerShell에서도 동작하지만, 아래 터미널을 사용하면 훨씬 풍부한 UI 경험을 얻을 수 있습니다.
+      </p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>터미널</th><th>지원 플랫폼</th><th>비고</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>WezTerm</strong></td><td>Windows · macOS · Linux</td><td>⭐ 가장 추천</td></tr>
+            <tr><td><strong>Ghostty</strong></td><td>macOS · Linux</td><td></td></tr>
+            <tr><td><strong>Kitty</strong></td><td>macOS · Linux</td><td></td></tr>
+            <tr><td><strong>Alacritty</strong></td><td>Windows · macOS · Linux</td><td></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 방법 1 -->
+      <h3 id="install-script">방법 1 — 공식 스크립트 (macOS / Linux) ⭐ 추천</h3>
+      <p>가장 간단하고 최신 버전을 바로 받을 수 있는 방법입니다.</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>curl -fsSL https://opencode.ai/install | bash</code></pre>
+      </div>
+      <p>설치 후 아래 명령으로 버전을 확인합니다.</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>opencode --version</code></pre>
+      </div>
+
+      <!-- 방법 2 -->
+      <h3 id="install-pkg">방법 2 — 패키지 매니저</h3>
+      <p>운영체제별로 익숙한 패키지 매니저를 사용할 수 있습니다.</p>
+
+      <h4>macOS (Homebrew)</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm"># 공식 탭 — 최신 버전 (권장)</span>
+brew install anomalyco/tap/opencode
+
+<span class="cm"># 또는 기본 Homebrew 포뮬러 (업데이트가 다소 느릴 수 있음)</span>
+brew install opencode</code></pre>
+      </div>
+
+      <h4>Windows</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm"># Chocolatey</span>
+choco install opencode
+
+<span class="cm"># Scoop</span>
+scoop install opencode
+
+<span class="cm"># npm (Node.js 필요)</span>
+npm install -g opencode-ai</code></pre>
+      </div>
+
+      <h4>Linux</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm"># Arch Linux (Paru AUR)</span>
+paru -S opencode-bin
+
+<span class="cm"># npm — 모든 배포판 공통</span>
+npm install -g opencode-ai</code></pre>
+      </div>
+
+      <!-- 방법 3 -->
+      <h3 id="install-docker">방법 3 — Docker</h3>
+      <p>로컬 환경을 오염시키지 않고 격리된 환경에서 실행할 때 유용합니다.</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>docker run -it --rm ghcr.io/anomalyco/opencode</code></pre>
+      </div>
+
+      <!-- 방법 4 -->
+      <h3 id="install-app">방법 4 — 데스크톱 앱 (GUI)</h3>
+      <p>
+        CLI보다 GUI 환경을 선호한다면 공식 홈페이지에서 네이티브 앱을 다운로드할 수 있습니다.
+        <br><a href="https://opencode.ai/download" target="_blank" rel="noopener">https://opencode.ai/download ↗</a>
+      </p>
+    </section>
+
+    <!-- ── 2. AI 제공자 ── -->
+    <section class="guide-section" id="provider">
+      <h2><span class="sec-badge">2</span> AI 제공자 설정</h2>
+      <p>OpenCode는 <strong>75개 이상의 AI 제공자</strong>를 지원합니다. 상황에 맞는 옵션을 선택하세요.</p>
+
+      <div class="provider-grid">
+        <div class="prov-card">
+          <div class="prov-header">
+            <span class="prov-icon">🐙</span>
+            <span class="prov-name">GitHub Copilot</span>
+            <span class="prov-badge free">무료(구독)</span>
+          </div>
+          <p>API Key 불필요. Copilot 구독이 있다면 OAuth로 즉시 연결.</p>
+        </div>
+        <div class="prov-card">
+          <div class="prov-header">
+            <span class="prov-icon">🌟</span>
+            <span class="prov-name">OpenCode Zen</span>
+            <span class="prov-badge">초보자 추천</span>
+          </div>
+          <p>검증된 모델, 무료 모델 포함. 복잡한 설정 없이 바로 시작.</p>
+        </div>
+        <div class="prov-card">
+          <div class="prov-header">
+            <span class="prov-icon">💰</span>
+            <span class="prov-name">OpenRouter</span>
+            <span class="prov-badge free">무료 모델 ↑</span>
+          </div>
+          <p>300개 이상 모델, 무료 모델 다수. 비용 최소화에 최적.</p>
+        </div>
+        <div class="prov-card">
+          <div class="prov-header">
+            <span class="prov-icon">🏆</span>
+            <span class="prov-name">Anthropic API</span>
+            <span class="prov-badge">최고 품질</span>
+          </div>
+          <p>Claude 직접 연결. 구독이 아닌 API Key 방식만 지원.</p>
+        </div>
+        <div class="prov-card">
+          <div class="prov-header">
+            <span class="prov-icon">🔒</span>
+            <span class="prov-name">로컬 (Ollama)</span>
+            <span class="prov-badge free">완전 무료</span>
+          </div>
+          <p>인터넷 없이 로컬 실행. 완전한 프라이버시 보장.</p>
+        </div>
+      </div>
+
+      <!-- 옵션 A -->
+      <h3 id="prov-copilot">옵션 A — GitHub Copilot 🐙</h3>
+      <p>GitHub Copilot 구독이 있다면 별도 API 키 없이 OAuth로 바로 연결됩니다.</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>opencode
+/connect
+<span class="cm"># 목록에서 'GitHub Copilot' 선택 → 브라우저 인증</span></code></pre>
+      </div>
+
+      <!-- 옵션 B -->
+      <h3 id="prov-zen">옵션 B — OpenCode Zen 🌟</h3>
+      <p>
+        OpenCode 팀이 직접 테스트·검증한 모델들을 제공하는 공식 서비스입니다.
+        Grok Code Fast, GLM 4.7, Big Pickle 등 일부 모델은 무료로 사용 가능합니다.
+        <br><a href="https://opencode.ai/zen" target="_blank" rel="noopener">https://opencode.ai/zen ↗</a>
+      </p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm"># 1. OpenCode 실행</span>
+opencode
+
+<span class="cm"># 2. TUI에서 입력</span>
+/connect
+
+<span class="cm"># 3. 'opencode' 선택</span>
+<span class="cm"># 4. 브라우저에서 https://opencode.ai/auth 로그인</span>
+<span class="cm"># 5. 결제 정보 추가 후 API 키 복사</span>
+<span class="cm"># 6. 터미널에 API 키 붙여넣기</span></code></pre>
+      </div>
+
+      <!-- 옵션 C -->
+      <h3 id="prov-router">옵션 C — OpenRouter 💰</h3>
+      <p>300개 이상의 모델에 접근 가능하며 무료 모델도 다수 포함되어 있습니다.</p>
+
+      <ol class="step-list">
+        <li>
+          <div>
+            <p class="step-title">API 키 발급</p>
+            <p class="step-body">
+              <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener">openrouter.ai/settings/keys</a>에서
+              계정을 만들고 API 키를 생성합니다. 키는 생성 시 한 번만 표시되므로 안전한 곳에 저장하세요.
+            </p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <p class="step-title">크레딧 충전 (선택)</p>
+            <p class="step-body">$10 충전으로 수백만 토큰 사용 가능. 무료 모델을 사용한다면 생략해도 됩니다.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <p class="step-title">OpenCode에 연결</p>
+            <div class="code-wrap" style="margin-top:8px;">
+              <button class="copy-btn" onclick="copyCode(this)">copy</button>
+              <pre><code>opencode
+/connect
+<span class="cm"># 'OpenRouter' 검색 → 선택 → API 키 입력</span></code></pre>
+            </div>
+          </div>
+        </li>
+      </ol>
+
+      <p>환경 변수로 영구 설정하려면 <code>~/.bashrc</code> 또는 <code>~/.zshrc</code>에 추가하세요.</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>export OPENROUTER_API_KEY=<span class="st">"sk-or-v1-your-key-here"</span></code></pre>
+      </div>
+
+      <!-- 옵션 D -->
+      <h3 id="prov-anthropic">옵션 D — Anthropic Claude API 🏆</h3>
+      <div class="callout warn">
+        ⚠️ <strong>주의:</strong> 2026년 1월부터 Anthropic 정책 변경으로 Claude Pro/Max
+        <strong>구독</strong>으로 OpenCode를 직접 사용하는 것은 불가능합니다.
+        반드시 <strong>API 키</strong>를 별도로 발급받아 사용해야 합니다.
+      </div>
+
+      <h4>방법 1 — /connect 명령어로 자동 발급</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>/connect
+<span class="cm"># 'Anthropic' 선택 → "Create an API Key"</span>
+<span class="cm"># 브라우저에서 로그인 후 코드 복사 → 터미널에 붙여넣기</span></code></pre>
+      </div>
+
+      <h4>방법 2 — 수동으로 API 키 입력</h4>
+      <p>
+        <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>에서
+        API 키를 생성한 후 아래와 같이 입력합니다.
+      </p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>/connect
+<span class="cm"># 'Anthropic' 선택 → "Manually enter API Key" → 키 붙여넣기</span></code></pre>
+      </div>
+
+      <!-- 옵션 E -->
+      <h3 id="prov-local">옵션 E — 로컬 모델 (Ollama) 🔒</h3>
+      <p>인터넷 연결 없이 완전히 로컬에서 실행하고 싶다면 <a href="https://ollama.ai" target="_blank" rel="noopener">Ollama</a>를 통해 로컬 모델을 연결할 수 있습니다.</p>
+
+      <h4>1단계 — Ollama 설치 및 모델 다운로드</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>ollama pull llama2</code></pre>
+      </div>
+
+      <h4>2단계 — OpenCode 설정 파일 작성</h4>
+      <p>
+        프로젝트 루트 또는 <code>~/.config/opencode/opencode.json</code>에 아래 파일을 생성합니다.
+      </p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>{
+  <span class="st">"$schema"</span>: <span class="st">"https://opencode.ai/config.json"</span>,
+  <span class="st">"provider"</span>: {
+    <span class="st">"ollama"</span>: {
+      <span class="st">"npm"</span>: <span class="st">"@ai-sdk/openai-compatible"</span>,
+      <span class="st">"name"</span>: <span class="st">"Ollama (로컬)"</span>,
+      <span class="st">"options"</span>: {
+        <span class="st">"baseURL"</span>: <span class="st">"http://localhost:11434/v1"</span>
+      },
+      <span class="st">"models"</span>: {
+        <span class="st">"llama2"</span>: { <span class="st">"name"</span>: <span class="st">"Llama 2"</span> }
+      }
+    }
+  }
+}</code></pre>
+      </div>
+
+      <!-- 비교 요약 -->
+      <h3 id="prov-summary">제공자 선택 요약</h3>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>옵션</th><th>비용</th><th>난이도</th><th>특징</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><strong>GitHub Copilot</strong></td><td>구독 필요</td><td>⭐ 매우 쉬움</td><td>API Key 불필요</td></tr>
+            <tr><td><strong>OpenCode Zen</strong></td><td>유료 (무료 모델 포함)</td><td>⭐ 매우 쉬움</td><td>검증된 안정 모델</td></tr>
+            <tr><td><strong>OpenRouter</strong></td><td>저렴 (무료 모델 포함)</td><td>⭐⭐ 쉬움</td><td>300개 이상 모델</td></tr>
+            <tr><td><strong>Anthropic API</strong></td><td>유료 (종량제)</td><td>⭐⭐ 쉬움</td><td>최고 품질</td></tr>
+            <tr><td><strong>로컬 (Ollama)</strong></td><td>무료</td><td>⭐⭐⭐ 보통</td><td>완전한 프라이버시</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 3. 초기화 ── -->
+    <section class="guide-section" id="init">
+      <h2><span class="sec-badge">3</span> 프로젝트 초기화</h2>
+      <p>AI 제공자 설정이 완료되면 프로젝트 디렉토리에서 OpenCode를 초기화합니다.</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm"># 1. 프로젝트 디렉토리로 이동</span>
+cd /path/to/your/project
+
+<span class="cm"># 2. OpenCode 실행</span>
+opencode
+
+<span class="cm"># 3. 프로젝트 초기화</span>
+/init</code></pre>
+      </div>
+      <p>
+        <code>/init</code> 명령어는 프로젝트 구조를 분석하고, AI가 프로젝트를 이해하는 데 도움이 되는
+        <code>AGENTS.md</code> 파일을 자동으로 생성하며 코딩 패턴을 인식합니다.
+      </p>
+    </section>
+
+    <!-- ── 4. AGENTS.md ── -->
+    <section class="guide-section" id="agents-md">
+      <h2><span class="sec-badge">4</span> AGENTS.md 파일 작성 <span style="font-size:.8rem;font-weight:400;color:var(--accent2);margin-left:4px;">(강력 추천)</span></h2>
+      <p>
+        <code>AGENTS.md</code>는 OpenCode가 프로젝트의 기술 스택, 코딩 규칙, 디렉토리 구조를 이해할 수 있도록 돕는
+        핵심 파일입니다. <code>/init</code>으로 자동 생성할 수도 있지만, 직접 작성하거나 내용을 보완하면
+        AI의 응답 품질이 크게 향상됩니다.
+      </p>
+      <div class="callout tip">
+        💡 프로젝트 루트에 <code>AGENTS.md</code>를 상세히 작성할수록 AI가 코드베이스를 훨씬 잘 이해하고
+        일관된 스타일로 코드를 작성해 줍니다.
+      </div>
+      <p>아래는 Next.js 프로젝트 기준 예시입니다.</p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm"># 프로젝트: 나의 SaaS 앱</span>
+
+<span class="kw">## 기술 스택</span>
+- Next.js 14 (App Router)
+- TypeScript
+- Tailwind CSS
+- PostgreSQL + Prisma
+
+<span class="kw">## 코딩 규칙</span>
+- 함수형 컴포넌트 사용
+- 가능한 서버 컴포넌트 우선
+- REST API 네이밍 컨벤션 준수
+- 모든 새 기능에 테스트 작성
+
+<span class="kw">## 프로젝트 구조</span>
+- /app        - Next.js 앱 라우터 페이지
+- /components - 재사용 가능한 UI 컴포넌트
+- /lib        - 유틸리티 함수
+- /prisma     - 데이터베이스 스키마</code></pre>
+      </div>
+    </section>
+
+    <!-- ── 5. 명령어 ── -->
+    <section class="guide-section" id="commands">
+      <h2><span class="sec-badge">5</span> 주요 명령어</h2>
+
+      <div class="cmd-row">
+        <span class="cmd-key">/connect</span>
+        <span class="cmd-desc"><strong>AI 제공자 연결</strong> — API 키 설정 및 제공자 선택</span>
+      </div>
+      <div class="cmd-row">
+        <span class="cmd-key">/init</span>
+        <span class="cmd-desc"><strong>프로젝트 초기화</strong> — 구조 분석 및 AGENTS.md 자동 생성</span>
+      </div>
+      <div class="cmd-row">
+        <span class="cmd-key">/models</span>
+        <span class="cmd-desc"><strong>모델 선택</strong> — 사용 가능한 모델 목록 조회 및 전환</span>
+      </div>
+      <div class="cmd-row">
+        <span class="cmd-key">Tab</span>
+        <span class="cmd-desc"><strong>모드 전환</strong> — Plan 모드 ↔ Build 모드 전환</span>
+      </div>
+    </section>
+
+    <!-- ── 6. 예시 ── -->
+    <section class="guide-section" id="examples">
+      <h2><span class="sec-badge">6</span> 사용 예시</h2>
+
+      <h3>Plan 모드 vs Build 모드</h3>
+      <p>
+        <code>Tab</code> 키로 두 모드를 전환할 수 있습니다.
+        <strong>Plan 모드</strong>는 읽기 전용으로 분석과 계획만 수행하며,
+        <strong>Build 모드</strong>는 실제로 파일을 수정합니다.
+        중요한 변경 전에는 Plan 모드로 먼저 검토하는 습관을 들이세요.
+      </p>
+
+      <h4>예시 1 — 코드 설명 요청</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>현재 프로젝트의 인증 흐름을 설명해줘</code></pre>
+      </div>
+
+      <h4>예시 2 — 기능 추가 (Plan → Build 순서)</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm"># Tab 으로 Plan 모드 전환 후</span>
+설정 페이지에 다크 모드 토글을 추가해줘.
+먼저 구현 계획을 세워봐.
+
+<span class="cm"># 계획 검토 후, Tab 으로 Build 모드 전환</span>
+좋아, 계획대로 진행해줘.</code></pre>
+      </div>
+
+      <h4>예시 3 — 버그 수정</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>로그인 폼 제출 시 'undefined is not a function' 오류가 발생해.
+auth.ts 45번 줄에서 발생하는데 수정해줘.</code></pre>
+      </div>
+
+      <div class="callout info" style="margin-top:28px;">
+        💡 <strong>팁:</strong> 요청할 때 파일명, 줄 번호, 오류 메시지를 함께 제공할수록 더 정확한 답변을 받을 수 있습니다.
+        <code>AGENTS.md</code>에 프로젝트 컨텍스트를 풍부하게 작성해두면 AI가 코드베이스를 훨씬 잘 이해합니다.
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <p>
+    Open Code · 바이브 코딩을 위한 오픈 기술 ·
+    Built on <a href="https://pages.github.com" target="_blank">GitHub Pages</a>
+    · 2026
+  </p>
+</footer>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    const text = pre.innerText || pre.textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'copied!';
+      setTimeout(() => btn.textContent = 'copy', 2000);
+    }).catch(() => {
+      btn.textContent = 'error';
+      setTimeout(() => btn.textContent = 'copy', 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
