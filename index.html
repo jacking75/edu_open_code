@@ -600,12 +600,303 @@
     }
     .oc-full { grid-column: 1 / -1; }
 
+    /* ── Command Table ──────────────────────── */
+    .cmd-table-wrap { margin-top: 10px; overflow-x: auto; }
+    .cmd-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .cmd-table thead th {
+      text-align: left;
+      padding: 10px 16px;
+      background: var(--surface);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.75rem;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    .cmd-table tbody td {
+      padding: 11px 16px;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      color: var(--muted);
+      vertical-align: middle;
+    }
+    .cmd-table tbody tr:last-child td { border-bottom: none; }
+    .cmd-table tbody tr:hover td { background: rgba(255,255,255,.02); }
+    .cmd-table .cmd-key {
+      font-family: var(--mono);
+      font-size: 0.82rem;
+      color: var(--accent2);
+      background: rgba(255,107,53,.08);
+      border: 1px solid rgba(255,107,53,.2);
+      padding: 3px 10px;
+      border-radius: 6px;
+      white-space: nowrap;
+      display: inline-block;
+    }
+
+    /* ── Shortcut Card ──────────────────────── */
+    .shortcut-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .shortcut-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .shortcut-card .sc-os {
+      font-size: 1.6rem;
+      flex-shrink: 0;
+    }
+    .shortcut-card .sc-label {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    .shortcut-card .sc-key {
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: var(--text);
+      background: rgba(255,255,255,.06);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 7px;
+      display: inline-block;
+    }
+
+    /* ── Cost Tip List ──────────────────────── */
+    .cost-list { list-style: none; padding: 0; margin: 14px 0; }
+    .cost-list li {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+      font-size: 0.86rem;
+      color: var(--muted);
+      line-height: 1.68;
+    }
+    .cost-list li:last-child { border-bottom: none; }
+    .cost-list li .cost-num {
+      flex-shrink: 0;
+      width: 24px; height: 24px;
+      background: linear-gradient(135deg, var(--green), #22c55e);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      font-weight: 900;
+      color: #fff;
+      margin-top: 1px;
+    }
+    .cost-list li strong { color: var(--text); }
+    .cost-code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px 18px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: auto;
+      margin: 12px 0;
+    }
+    .cost-code .ck { color: var(--purple); }
+    .cost-code .cv { color: var(--green); }
+    .cost-code .cc { color: var(--muted); font-style: italic; }
+
+    /* ── Trouble cards ──────────────────────── */
+    .trouble-list { display: grid; gap: 14px; margin-top: 14px; }
+    .trouble-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 0 18px;
+    }
+    .trouble-card .tc-badge {
+      grid-column: 1;
+      grid-row: 1 / 3;
+      width: 38px; height: 38px;
+      background: rgba(239,68,68,.12);
+      border: 1px solid rgba(239,68,68,.25);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .trouble-card .tc-title {
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .trouble-card .tc-body { font-size: 0.83rem; color: var(--muted); line-height: 1.68; }
+    .trouble-card .tc-body code {
+      font-family: var(--mono);
+      font-size: 0.82em;
+      background: rgba(255,255,255,.07);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--accent2);
+    }
+
+    /* ── Pro Tips ──────────────────────────── */
+    .pro-tips-list { list-style: none; padding: 0; margin: 14px 0; counter-reset: tips; }
+    .pro-tips-list li {
+      counter-increment: tips;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 13px 0;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .pro-tips-list li:last-child { border-bottom: none; }
+    .pro-tips-list li::before {
+      content: counter(tips);
+      flex-shrink: 0;
+      width: 26px; height: 26px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: #fff;
+      margin-top: 2px;
+    }
+    .pro-tips-list li .tip-body {
+      font-size: 0.87rem;
+      color: var(--muted);
+      line-height: 1.72;
+    }
+    .pro-tips-list li .tip-body strong { color: var(--text); }
+    .pro-tips-list li .tip-body code {
+      font-family: var(--mono);
+      font-size: 0.84em;
+      background: rgba(255,255,255,.07);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--accent2);
+    }
+
+    /* ── Cons & Cautions ──────────────────── */
+    .cons-grid { display: grid; gap: 14px; margin-top: 14px; }
+    .cons-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 22px;
+    }
+    .cons-card h4 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cons-card ul { list-style: none; padding: 0; }
+    .cons-card ul li {
+      font-size: 0.84rem;
+      color: var(--muted);
+      line-height: 1.72;
+      padding: 7px 0 7px 18px;
+      position: relative;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .cons-card ul li:last-child { border-bottom: none; }
+    .cons-card ul li::before {
+      content: '▸';
+      position: absolute;
+      left: 0;
+      color: #f87171;
+      font-size: 0.75rem;
+      top: 9px;
+    }
+    .cons-card ul li strong { color: var(--text); }
+    .cons-card .notice-badge {
+      display: inline-block;
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      color: var(--green);
+      background: rgba(61,220,132,.1);
+      border: 1px solid rgba(61,220,132,.22);
+      padding: 1px 8px;
+      border-radius: 99px;
+      margin-left: 6px;
+      font-weight: 600;
+    }
+
+    /* ── Scenario ──────────────────────────── */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 16px;
+    }
+    .scenario-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 22px;
+    }
+    .scenario-card.good { border-color: rgba(61,220,132,.25); }
+    .scenario-card.bad  { border-color: rgba(239,68,68,.2); }
+    .scenario-card h4 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      margin-bottom: 14px;
+    }
+    .scenario-card.good h4 { color: var(--green); }
+    .scenario-card.bad  h4 { color: #f87171; }
+    .scenario-card ul { list-style: none; padding: 0; }
+    .scenario-card ul li {
+      font-size: 0.85rem;
+      color: var(--muted);
+      line-height: 1.68;
+      padding: 6px 0 6px 20px;
+      position: relative;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .scenario-card ul li:last-child { border-bottom: none; }
+    .scenario-card.good ul li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 700; }
+    .scenario-card.bad  ul li::before { content: '✗'; position: absolute; left: 0; color: #f87171; font-weight: 700; }
+    .scenario-card ul li strong { color: var(--text); }
+    .scenario-summary {
+      margin-top: 24px;
+      padding: 18px 22px;
+      background: linear-gradient(135deg, rgba(255,107,53,.07), rgba(167,139,250,.05));
+      border: 1px solid rgba(255,107,53,.2);
+      border-radius: var(--radius);
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.75;
+    }
+    .scenario-summary strong { color: var(--text); }
+
     /* ── Responsive ─────────────────────────── */
     @media (max-width: 640px) {
       .nav-links { display: none; }
       .hero { padding: 76px 20px 60px; }
       .col-2 { grid-template-columns: 1fr; }
       .oc-full { grid-column: auto; }
+      .scenario-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -621,6 +912,7 @@
     <ul class="nav-links">
       <li><a href="#opencode">OpenCode</a></li>
       <li><a href="guide.html">설치 가이드</a></li>
+      <li><a href="openrouter-guide.html">비용 최적화</a></li>
       <li><a href="#topics">주제</a></li>
       <li><a href="#roadmap">로드맵</a></li>
       <li><a href="#tools">도구</a></li>
@@ -961,6 +1253,280 @@
     <span class="tool-chip"><span class="dot g"></span>ChromaDB</span>
     <span class="tool-chip"><span class="dot p"></span>LangChain</span>
     <span class="tool-chip"><span class="dot b"></span>LocalAI</span>
+  </div>
+</div>
+
+<!-- ══════════════ 필수 명령어 ══════════════ -->
+<div class="wrap" id="commands">
+  <p class="sec-eyebrow">// commands</p>
+  <h2 class="sec-title">7 · 필수 명령어 정리</h2>
+  <p class="sec-sub">OpenCode TUI에서 사용하는 핵심 명령어 & 단축키 모음입니다.</p>
+
+  <div class="cmd-table-wrap">
+    <table class="cmd-table">
+      <thead>
+        <tr><th>명령어</th><th>기능</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><span class="cmd-key">/connect</span></td><td>AI 제공자 연결 및 API 키 설정</td></tr>
+        <tr><td><span class="cmd-key">/models</span></td><td>사용 가능한 모델 목록 조회 및 전환</td></tr>
+        <tr><td><span class="cmd-key">/init</span></td><td>프로젝트 구조 분석 및 초기화</td></tr>
+        <tr><td><span class="cmd-key">/undo</span></td><td>마지막 변경 취소</td></tr>
+        <tr><td><span class="cmd-key">/redo</span></td><td>취소한 변경 다시 실행</td></tr>
+        <tr><td><span class="cmd-key">/share</span></td><td>현재 대화 링크 공유</td></tr>
+        <tr><td><span class="cmd-key">/compact</span></td><td>대화 컨텍스트 요약·압축 (토큰 절약)</td></tr>
+        <tr><td><span class="cmd-key">/sessions</span></td><td>세션 목록 표시 및 이전 세션 전환</td></tr>
+        <tr><td><span class="cmd-key">/export</span></td><td>현재 대화를 마크다운 파일로 내보내기</td></tr>
+        <tr><td><span class="cmd-key">/help</span></td><td>도움말 표시</td></tr>
+        <tr><td><span class="cmd-key">@</span></td><td>프로젝트 파일 인라인 검색</td></tr>
+        <tr><td><span class="cmd-key">Tab</span></td><td>Plan ↔ Build 모드 전환</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════ IDE 통합 ══════════════ -->
+<div class="wrap" id="ide">
+  <p class="sec-eyebrow">// ide integration</p>
+  <h2 class="sec-title">8 · IDE 통합 (VS Code / Cursor)</h2>
+  <p class="sec-sub">단축키 하나로 IDE 분할 뷰에서 OpenCode를 바로 열 수 있습니다.</p>
+
+  <div class="shortcut-grid">
+    <div class="shortcut-card">
+      <span class="sc-os">🍎</span>
+      <div>
+        <p class="sc-label">macOS</p>
+        <span class="sc-key">Cmd + Esc</span>
+      </div>
+    </div>
+    <div class="shortcut-card">
+      <span class="sc-os">🪟</span>
+      <div>
+        <p class="sc-label">Windows / Linux</p>
+        <span class="sc-key">Ctrl + Esc</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 비용 최적화 ══════════════ -->
+<div class="wrap" id="cost">
+  <p class="sec-eyebrow">// cost optimization</p>
+  <h2 class="sec-title">9 · 비용 최적화 팁</h2>
+  <p class="sec-sub">OpenRouter를 사용할 때 비용을 크게 줄이는 방법입니다.</p>
+
+  <ul class="cost-list">
+    <li>
+      <span class="cost-num">1</span>
+      <div>
+        <strong>무료 모델 적극 활용</strong><br>
+        <code style="font-family:monospace;font-size:.82em;background:rgba(255,255,255,.07);padding:1px 6px;border-radius:4px;color:#ff9a6c;">meta-llama/llama-3.3-70b-instruct:free</code> 및
+        <code style="font-family:monospace;font-size:.82em;background:rgba(255,255,255,.07);padding:1px 6px;border-radius:4px;color:#ff9a6c;">google/gemma-2-9b-it:free</code> 등
+        OpenRouter에서 무료로 사용 가능한 모델을 우선 활용하세요.
+      </div>
+    </li>
+    <li>
+      <span class="cost-num">2</span>
+      <div>
+        <strong>작업별 모델 선택</strong><br>
+        간단한 자동 완성·질의에는 저렴한 모델을, 복잡한 리팩토링·설계에만 프리미엄 모델을 사용하세요.
+      </div>
+    </li>
+    <li>
+      <span class="cost-num">3</span>
+      <div>
+        <strong>설정 파일에서 모델 고정</strong><br>
+        <code style="font-family:monospace;font-size:.82em;background:rgba(255,255,255,.07);padding:1px 6px;border-radius:4px;color:#ff9a6c;">opencode.json</code>에 아래처럼 무료 모델을 등록하면 매번 선택할 필요가 없습니다.
+        <div class="cost-code" style="margin-top:10px;">
+{<br>
+&nbsp;&nbsp;<span class="ck">"$schema"</span>: <span class="cv">"https://opencode.ai/config.json"</span>,<br>
+&nbsp;&nbsp;<span class="ck">"provider"</span>: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="ck">"openrouter"</span>: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ck">"models"</span>: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cv">"meta-llama/llama-3.3-70b-instruct:free"</span>: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="ck">"name"</span>: <span class="cv">"Llama 3.3 70B (무료)"</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;&nbsp;&nbsp;}<br>
+&nbsp;&nbsp;}<br>
+}
+        </div>
+      </div>
+    </li>
+  </ul>
+  <div style="text-align:center;margin-top:28px;">
+    <a href="openrouter-guide.html" class="btn btn-orange" style="font-size:.88rem;padding:12px 26px;display:inline-flex;align-items:center;gap:8px;">💰 OpenRouter 비용 최적화 완벽 가이드 →</a>
+  </div>
+</div>
+
+<!-- ══════════════ 문제 해결 ══════════════ -->
+<div class="wrap" id="troubleshoot">
+  <p class="sec-eyebrow">// troubleshooting</p>
+  <h2 class="sec-title">🔧 문제 해결</h2>
+  <p class="sec-sub">자주 발생하는 문제와 해결 방법입니다.</p>
+
+  <div class="trouble-list">
+    <div class="trouble-card">
+      <span class="tc-badge">🔌</span>
+      <div class="tc-title">연결 실패</div>
+      <div class="tc-body">
+        API 키가 올바른지 확인하세요.
+        <code>cat ~/.local/share/opencode/auth.json</code> 으로 키를 점검한 뒤
+        <code>/connect</code> 명령어로 다시 연결을 시도합니다.
+      </div>
+    </div>
+    <div class="trouble-card">
+      <span class="tc-badge">🔍</span>
+      <div class="tc-title">모델이 안 보여요</div>
+      <div class="tc-body">
+        <code>/connect</code> 로 제공자를 다시 설정한 뒤
+        <code>/models</code> 로 목록을 새로고침하세요.
+      </div>
+    </div>
+    <div class="trouble-card">
+      <span class="tc-badge">🐢</span>
+      <div class="tc-title">응답이 너무 느려요</div>
+      <div class="tc-body">
+        <code>/models</code> 로 더 빠른 모델로 전환하세요 (예: Gemini Flash).
+        인터넷 의존도를 낮추고 싶다면 Ollama 로컬 모델을 고려하세요.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ PRO TIPS ══════════════ -->
+<div class="wrap" id="protips">
+  <p class="sec-eyebrow">// pro tips</p>
+  <h2 class="sec-title">💡 초보자를 위한 Pro Tips</h2>
+  <p class="sec-sub">OpenCode를 더 스마트하게 쓰는 다섯 가지 습관입니다.</p>
+
+  <ul class="pro-tips-list">
+    <li><div class="tip-body"><strong>항상 Plan 모드로 시작하세요.</strong> 복잡한 작업 전에 <code>Tab</code>으로 Plan 모드로 전환해 계획을 먼저 검토하면 실수를 줄일 수 있습니다.</div></li>
+    <li><div class="tip-body"><strong>구체적으로 요청하세요.</strong> "더 나아지게 해줘" ❌ → "async/await를 사용해서 리팩토링해줘" ✅ — 명확한 요청일수록 더 정확한 결과를 얻습니다.</div></li>
+    <li><div class="tip-body"><strong>컨텍스트를 충분히 제공하세요.</strong> 파일명·줄 번호·에러 메시지를 함께 입력하면 AI가 훨씬 정확한 답변을 제시합니다.</div></li>
+    <li><div class="tip-body"><strong>이미지를 활용하세요.</strong> 디자인 목업 이미지를 드래그 앤 드롭으로 대화창에 추가하면 시각적 요구사항을 바로 전달할 수 있습니다.</div></li>
+    <li><div class="tip-body"><strong>자주 Git 커밋하세요.</strong> <code>/undo</code>로 되돌릴 수 있지만, 중요한 변경 전후에는 반드시 커밋해 두는 것이 안전합니다.</div></li>
+  </ul>
+</div>
+
+<!-- ══════════════ 주요 단점 ══════════════ -->
+<div class="wrap" id="cons">
+  <p class="sec-eyebrow">// limitations</p>
+  <h2 class="sec-title">주요 단점 <span style="font-size:.9rem;font-weight:400;color:var(--muted);">(2026.01.20 기준)</span></h2>
+  <p class="sec-sub">강력한 도구이지만, 사용 전 알아야 할 한계점들입니다.</p>
+
+  <div class="cons-grid">
+    <div class="cons-card">
+      <h4>🔧 초기 설정의 복잡성</h4>
+      <ul>
+        <li><strong>AI 제공자 수동 설정 필요:</strong> API 키를 직접 구성해야 합니다</li>
+        <li><strong>터미널 숙련도 요구:</strong> CLI 기반이라 터미널에 익숙해야 합니다</li>
+        <li><strong>높은 학습 곡선:</strong> Cursor처럼 "다운로드 후 바로 사용" 방식이 아닙니다</li>
+      </ul>
+    </div>
+    <div class="cons-card">
+      <h4>⚠️ 기본 기능 제약</h4>
+      <ul>
+        <li><strong>웹 검색 기능 부재:</strong> 실시간 검색 불가 (Tavily MCP 등 추가 설정 필요)</li>
+        <li><strong>GUI 미제공:</strong> 시각적 IDE 경험을 원하면 Cursor가 더 적합
+          <span class="notice-badge">2026.01.20 데스크탑 앱 출시 — GUI 지원</span></li>
+        <li><strong>복사/붙여넣기 제약:</strong> 대화 내용 직접 복사가 불편하다는 사용자 평가 있음</li>
+      </ul>
+    </div>
+    <div class="cons-card">
+      <h4>🚨 Anthropic 정책 변경 리스크</h4>
+      <ul>
+        <li><strong>구독 연동 차단:</strong> 2026년 1월, Anthropic이 Claude 구독으로 OpenCode 사용을 갑자기 차단</li>
+        <li><strong>사전 경고 없음:</strong> 예고 없는 정책 변경으로 사용자들이 당황했습니다</li>
+        <li><strong>API Key 방식 필수:</strong> Claude 사용 시 반드시 별도 API 키가 필요합니다</li>
+      </ul>
+      <div style="margin-top:12px;">
+        <a href="https://www.youtube.com/watch?v=VfBVLzRGNnc" target="_blank" rel="noopener"
+           style="font-size:0.82rem;color:var(--blue);">📺 관련 YouTube 영상 ↗</a>
+      </div>
+    </div>
+    <div class="cons-card">
+      <h4>📊 통합 완성도</h4>
+      <ul>
+        <li><strong>Claude Code 대비 툴링 미흡:</strong> 아직 개발 중인 기능들이 많습니다</li>
+        <li><strong>실험적 성격:</strong> "진지한 프로덕션 평가는 아직 시기상조"라는 평가도 있습니다</li>
+        <li><strong>커뮤니티 지원 의존:</strong> 공식 엔터프라이즈 지원보다 커뮤니티에 의존합니다</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 주의사항 ══════════════ -->
+<div class="wrap" id="cautions">
+  <p class="sec-eyebrow">// cautions</p>
+  <h2 class="sec-title">사용 시 주의사항</h2>
+  <p class="sec-sub">OpenCode를 안전하고 효율적으로 사용하기 위한 체크리스트입니다.</p>
+
+  <div class="cons-grid">
+    <div class="cons-card">
+      <h4>💰 비용 관리</h4>
+      <ul>
+        <li><strong>BYOK 모델:</strong> API 비용을 직접 관리해야 합니다</li>
+        <li><strong>모델 선택 최적화:</strong> OpenRouter 활용 시 비용 최대 70% 절감 가능하나, 모델을 직접 선택·관리해야 합니다</li>
+        <li><strong>무료 모델 성능 차이:</strong> Grok Code Fast, GLM 4.7 등 무료 모델은 프리미엄 대비 성능이 낮을 수 있습니다</li>
+      </ul>
+    </div>
+    <div class="cons-card">
+      <h4>🔒 보안 및 개인정보</h4>
+      <ul>
+        <li><strong>API 키 관리:</strong> 여러 제공자의 키를 안전하게 보관해야 합니다</li>
+        <li><strong>로컬 환경 보안:</strong> 오픈소스 특성상 코드를 직접 검토하고 안전성을 확인하세요</li>
+      </ul>
+    </div>
+    <div class="cons-card">
+      <h4>🔄 업데이트 및 호환성</h4>
+      <ul>
+        <li><strong>빠른 업데이트 주기:</strong> 커뮤니티 기반으로 업데이트가 빠르지만 안정성이 낮을 수 있습니다</li>
+        <li><strong>외부 정책 변경 취약:</strong> Anthropic 사례처럼 제공자 정책 변경에 영향을 받습니다</li>
+        <li><strong>MCP 서버 별도 설정:</strong> 웹 검색 등 추가 기능은 별도 구성이 필요합니다</li>
+      </ul>
+    </div>
+    <div class="cons-card">
+      <h4>🖥️ 작업 환경 고려</h4>
+      <ul>
+        <li><strong>터미널 중심 워크플로우:</strong> GUI를 선호한다면 Cursor나 IDE가 더 적합합니다</li>
+        <li><strong>시각적 diff 뷰 없음:</strong> 복잡한 리팩토링 시 Cursor보다 불편할 수 있습니다</li>
+        <li><strong>팀 협업 제약:</strong> 엔터프라이즈 기능이 약해 팀 단위 사용 시 제약이 있습니다</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ 추천 시나리오 ══════════════ -->
+<div class="wrap" id="scenarios">
+  <p class="sec-eyebrow">// when to use</p>
+  <h2 class="sec-title">추천 사용 시나리오</h2>
+  <p class="sec-sub">어떤 상황에서 OpenCode를 선택해야 할까요?</p>
+
+  <div class="scenario-grid">
+    <div class="scenario-card good">
+      <h4>✅ OpenCode가 적합한 경우</h4>
+      <ul>
+        <li>오픈소스·벤더 락인 탈피를 선호하는 개발자</li>
+        <li>API 비용을 직접 최소화하고 싶은 경우</li>
+        <li>여러 AI 제공자를 유연하게 전환하고 싶을 때</li>
+        <li>터미널 중심 워크플로우를 선호하는 경우</li>
+        <li>대규모 작업 병렬 처리가 필요한 경우</li>
+      </ul>
+    </div>
+    <div class="scenario-card bad">
+      <h4>❌ 다른 도구가 나은 경우</h4>
+      <ul>
+        <li>IDE 통합 GUI 경험을 원하면 → <strong>Cursor</strong></li>
+        <li>Claude만 쓰고 공식 지원을 원하면 → <strong>Claude Code</strong></li>
+        <li>코딩 경험 없이 앱만 만들고 싶다면 → <strong>Nxcode</strong></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="scenario-summary">
+    🚀 OpenCode는 강력하고 유연한 도구이지만, <strong>초기 설정의 복잡성과 외부 정책 변경 리스크</strong>를
+    감수할 수 있는 개발자에게 적합합니다. 터미널에 익숙하고 비용 최적화를 중시한다면 훌륭한 선택이 될 수 있습니다.
   </div>
 </div>
 

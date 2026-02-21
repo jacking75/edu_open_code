@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenRouter 비용 최적화 & GLM 4.7 완전 가이드 — Open Code</title>
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FF6B35'/%3E%3Crect x='10' y='14' width='44' height='38' rx='6' fill='%23FF8C5A'/%3E%3Crect x='29' y='6' width='6' height='10' rx='3' fill='white'/%3E%3Ccircle cx='32' cy='5' r='5' fill='white'/%3E%3Crect x='14' y='20' width='12' height='10' rx='3' fill='%230a0a0f'/%3E%3Crect x='38' y='20' width='12' height='10' rx='3' fill='%230a0a0f'/%3E%3Ccircle cx='20' cy='25' r='4' fill='%2360a5fa'/%3E%3Ccircle cx='44' cy='25' r='4' fill='%2360a5fa'/%3E%3Crect x='14' y='36' width='36' height='10' rx='3' fill='%230a0a0f'/%3E%3Crect x='21' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3Crect x='31' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3Crect x='41' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3C/svg%3E" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0a0a0f;
+      --surface: #111118;
+      --card:    #17171f;
+      --border:  #27273a;
+      --accent:  #ff6b35;
+      --accent2: #ff9a6c;
+      --green:   #3ddc84;
+      --blue:    #60a5fa;
+      --purple:  #a78bfa;
+      --yellow:  #fbbf24;
+      --text:    #f0f0f8;
+      --muted:   #7070a0;
+      --radius:  13px;
+      --font:    -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono:    'Fira Code', 'Cascadia Code', 'SFMono-Regular', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* ── Header ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    nav {
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+      height: 60px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 1.05rem; color: var(--text);
+      letter-spacing: -.01em; text-decoration: none !important;
+    }
+    .logo-mark {
+      width: 32px; height: 32px; background: var(--accent); border-radius: 8px;
+      display: grid; place-items: center; font-family: var(--mono);
+      font-size: 1rem; font-weight: 900; color: #fff; flex-shrink: 0;
+    }
+    .nav-links { display: flex; gap: 26px; list-style: none; }
+    .nav-links a { color: var(--muted); font-size: .875rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-pill {
+      font-size: .7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      background: rgba(255,107,53,.15); color: var(--accent2);
+      border: 1px solid rgba(255,107,53,.35); padding: 4px 12px; border-radius: 99px;
+    }
+
+    /* ── Page layout ── */
+    .page-wrap {
+      max-width: 960px; margin: 0 auto; padding: 64px 24px 100px;
+      display: grid; grid-template-columns: 210px 1fr; gap: 48px; align-items: start;
+    }
+
+    /* ── Sidebar TOC ── */
+    .toc { position: sticky; top: 84px; }
+    .toc-title {
+      font-family: var(--mono); font-size: .7rem; color: var(--accent);
+      letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .toc-list { list-style: none; border-left: 2px solid var(--border); padding-left: 16px; }
+    .toc-list li { margin-bottom: 2px; }
+    .toc-list a { color: var(--muted); font-size: .8rem; display: block; padding: 4px 0; transition: color .2s; line-height: 1.4; }
+    .toc-list a:hover { color: var(--text); text-decoration: none; }
+    .toc-list .sub { padding-left: 12px; font-size: .75rem; }
+    .toc-sep { height: 1px; background: var(--border); margin: 10px 0; }
+
+    /* ── Content ── */
+    .content { min-width: 0; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      color: var(--muted); font-size: .83rem; margin-bottom: 36px; transition: color .2s;
+    }
+    .back-btn:hover { color: var(--text); text-decoration: none; }
+    .page-eyebrow {
+      font-family: var(--mono); font-size: .72rem; color: var(--accent);
+      letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .page-title {
+      font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 900;
+      letter-spacing: -.03em; line-height: 1.15; margin-bottom: 14px;
+    }
+    .page-lead {
+      font-size: .97rem; color: var(--muted); line-height: 1.78;
+      margin-bottom: 52px; padding-bottom: 36px; border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Part divider ── */
+    .part-divider {
+      display: flex; align-items: center; gap: 16px;
+      margin: 64px 0 40px; font-size: .72rem;
+      font-family: var(--mono); color: var(--accent); letter-spacing: .1em; text-transform: uppercase;
+    }
+    .part-divider::before, .part-divider::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border));
+    }
+    .part-divider::after { background: linear-gradient(90deg, var(--border), transparent); }
+
+    /* ── Section ── */
+    .g-section { margin-bottom: 60px; }
+    .g-section h2 {
+      font-size: 1.25rem; font-weight: 800; letter-spacing: -.02em;
+      margin-bottom: 8px; display: flex; align-items: center; gap: 12px;
+      padding-bottom: 14px; border-bottom: 1px solid var(--border);
+    }
+    .sec-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), #c0392b);
+      border-radius: 8px; font-size: .82rem; font-weight: 900; color: #fff; flex-shrink: 0;
+    }
+    .sec-badge.green { background: linear-gradient(135deg, var(--green), #22c55e); }
+    .sec-badge.blue  { background: linear-gradient(135deg, var(--blue), #3b82f6); }
+    .sec-badge.purple{ background: linear-gradient(135deg, var(--purple), #8b5cf6); }
+    .g-section h3 { font-size: .98rem; font-weight: 700; color: var(--text); margin: 26px 0 10px; }
+    .g-section h4 {
+      font-size: .85rem; font-weight: 700; color: var(--accent2);
+      margin: 18px 0 8px; font-family: var(--mono);
+    }
+    .g-section p { font-size: .87rem; color: var(--muted); line-height: 1.78; margin-bottom: 12px; }
+    .g-section strong { color: var(--text); font-weight: 700; }
+    .g-section ul, .g-section ol { padding-left: 20px; margin-bottom: 12px; }
+    .g-section li { font-size: .86rem; color: var(--muted); line-height: 1.72; margin-bottom: 5px; }
+    .g-section li strong { color: var(--text); }
+
+    /* ── Code ── */
+    .code-wrap { position: relative; margin: 14px 0; }
+    pre {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 18px 20px; overflow-x: auto;
+      font-family: var(--mono); font-size: .82rem; line-height: 1.65; color: var(--text);
+    }
+    code {
+      font-family: var(--mono); font-size: .85em;
+      background: rgba(255,255,255,.07); padding: 1px 6px; border-radius: 4px; color: var(--accent2);
+    }
+    pre code { background: transparent; padding: 0; font-size: inherit; color: inherit; border-radius: 0; }
+    .kw { color: var(--purple); }
+    .cv { color: var(--green); }
+    .cm { color: var(--muted); font-style: italic; }
+    .copy-btn {
+      position: absolute; top: 10px; right: 12px;
+      font-size: .7rem; font-family: var(--mono); color: var(--muted);
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 5px; padding: 3px 10px; cursor: pointer; transition: color .2s, border-color .2s;
+    }
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; margin: 16px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+    thead th {
+      text-align: left; padding: 10px 14px; background: var(--surface);
+      color: var(--muted); font-weight: 600; font-size: .75rem;
+      letter-spacing: .04em; text-transform: uppercase; border-bottom: 1px solid var(--border);
+    }
+    tbody td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.04); color: var(--muted); vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(255,255,255,.02); }
+    tbody td strong { color: var(--text); }
+    tbody td:first-child { color: var(--text); font-weight: 600; }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 14px 18px; border-radius: 10px;
+      font-size: .85rem; line-height: 1.72; margin: 16px 0;
+    }
+    .callout.info  { background: rgba(96,165,250,.07);  border: 1px solid rgba(96,165,250,.22);  color: #93c5fd; }
+    .callout.warn  { background: rgba(239,68,68,.07);   border: 1px solid rgba(239,68,68,.22);   color: #fca5a5; }
+    .callout.tip   { background: rgba(61,220,132,.07);  border: 1px solid rgba(61,220,132,.22);  color: #6ee7b7; }
+    .callout.gold  { background: rgba(251,191,36,.07);  border: 1px solid rgba(251,191,36,.22);  color: #fde68a; }
+    .callout strong { font-weight: 700; }
+    .callout p { margin: 0; font-size: inherit; color: inherit; }
+
+    /* ── Tier table (price tiers) ── */
+    .tier-free   td:first-child { color: var(--green) !important; }
+    .tier-low    td:first-child { color: var(--blue) !important; }
+    .tier-mid    td:first-child { color: var(--yellow) !important; }
+    .tier-high   td:first-child { color: var(--accent2) !important; }
+    .tier-top    td:first-child { color: #f87171 !important; }
+
+    /* ── Model cards ── */
+    .model-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px,1fr)); gap: 14px; margin: 18px 0; }
+    .model-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 22px 20px; transition: border-color .22s, transform .2s;
+    }
+    .model-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+    .model-card .mc-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+    .model-card .mc-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .model-card .mc-name { font-weight: 800; font-size: .92rem; color: var(--text); line-height: 1.3; }
+    .model-card .mc-badge {
+      display: inline-block; margin-top: 4px;
+      font-family: var(--mono); font-size: .68rem;
+      padding: 2px 8px; border-radius: 99px;
+    }
+    .mc-badge.free   { color: var(--green);  background: rgba(61,220,132,.1);  border: 1px solid rgba(61,220,132,.22); }
+    .mc-badge.cheap  { color: var(--blue);   background: rgba(96,165,250,.1);  border: 1px solid rgba(96,165,250,.22); }
+    .mc-badge.premium{ color: var(--accent2);background: rgba(255,107,53,.1);  border: 1px solid rgba(255,107,53,.22); }
+    .model-card .mc-specs { font-size: .8rem; color: var(--muted); line-height: 1.65; margin-bottom: 12px; }
+    .model-card .mc-specs strong { color: var(--text); }
+    .model-card .mc-tasks { list-style: none; padding: 0; }
+    .model-card .mc-tasks li {
+      font-size: .8rem; color: var(--muted); padding: 4px 0 4px 16px; position: relative;
+      border-bottom: 1px solid rgba(255,255,255,.04);
+    }
+    .model-card .mc-tasks li:last-child { border-bottom: none; }
+    .model-card .mc-tasks li::before { content: '✓'; position: absolute; left: 0; color: var(--green); font-weight: 700; font-size: .75rem; top: 5px; }
+
+    /* ── Cascade flow ── */
+    .cascade { display: flex; flex-direction: column; gap: 4px; margin: 20px 0; }
+    .cascade-step {
+      background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+      padding: 18px 20px; display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center;
+    }
+    .cascade-step .cs-num {
+      width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: .82rem; color: #fff;
+      background: linear-gradient(135deg, var(--accent), #c0392b);
+    }
+    .cascade-step .cs-body h4 { font-size: .88rem; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+    .cascade-step .cs-body p  { font-size: .8rem; color: var(--muted); margin: 0; }
+    .cascade-step .cs-cost {
+      text-align: right; flex-shrink: 0;
+      font-family: var(--mono); font-size: .8rem;
+    }
+    .cascade-step .cs-cost .cs-model { color: var(--muted); font-size: .74rem; margin-bottom: 4px; }
+    .cascade-step .cs-cost .cs-price { color: var(--green); font-weight: 700; }
+    .cascade-step .cs-cost .cs-price.paid { color: var(--accent2); }
+    .cascade-arrow { text-align: center; color: var(--muted); font-size: .85rem; padding: 2px 0; }
+    .cascade-total {
+      margin-top: 14px; padding: 14px 18px;
+      background: rgba(61,220,132,.07); border: 1px solid rgba(61,220,132,.22);
+      border-radius: 9px; font-size: .87rem; color: var(--green); text-align: center;
+    }
+    .cascade-total strong { font-weight: 800; }
+
+    /* ── Scenario comparison ── */
+    .scenario-cards { display: grid; gap: 16px; margin-top: 16px; }
+    .scen-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+    }
+    .scen-card .sc-header {
+      padding: 14px 20px; background: rgba(255,255,255,.025);
+      border-bottom: 1px solid var(--border); font-weight: 700; color: var(--text); font-size: .9rem;
+    }
+    .scen-card .sc-rows { }
+    .scen-row {
+      display: grid; grid-template-columns: 1fr auto auto; gap: 16px;
+      padding: 11px 20px; border-bottom: 1px solid rgba(255,255,255,.04); align-items: center;
+    }
+    .scen-row:last-child { border-bottom: none; }
+    .scen-row .sr-method { font-size: .84rem; color: var(--muted); }
+    .scen-row .sr-model  { font-size: .78rem; color: var(--muted); font-family: var(--mono); }
+    .scen-row .sr-cost   { font-size: .88rem; font-weight: 700; white-space: nowrap; }
+    .scen-row.bad    .sr-cost { color: #f87171; }
+    .scen-row.ok     .sr-cost { color: var(--yellow); }
+    .scen-row.best   .sr-cost { color: var(--green); }
+    .scen-row.best   .sr-method { color: var(--text); }
+
+    /* ── Task guide table ── */
+    .task-table-wrap { overflow-x: auto; margin: 16px 0; }
+    .task-table { width: 100%; border-collapse: collapse; font-size: .83rem; }
+    .task-table thead th {
+      text-align: left; padding: 10px 14px; background: var(--surface);
+      color: var(--muted); font-weight: 600; font-size: .75rem;
+      letter-spacing: .04em; text-transform: uppercase; border-bottom: 1px solid var(--border);
+    }
+    .task-table tbody td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.04); color: var(--muted); }
+    .task-table tbody tr:last-child td { border-bottom: none; }
+    .task-table tbody tr:hover td { background: rgba(255,255,255,.02); }
+    .task-table td.t-model { font-family: var(--mono); font-size: .8rem; color: var(--accent2); }
+    .task-table td.t-cost  { font-family: var(--mono); font-size: .82rem; color: var(--green); font-weight: 700; white-space: nowrap; }
+
+    /* ── Summary law cards ── */
+    .law-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px,1fr)); gap: 14px; margin: 18px 0; }
+    .law-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px 16px; text-align: center;
+    }
+    .law-card .lc-ico { font-size: 1.6rem; margin-bottom: 8px; }
+    .law-card .lc-num { font-family: var(--mono); font-size: .68rem; color: var(--accent); letter-spacing: .08em; margin-bottom: 6px; }
+    .law-card .lc-text { font-size: .82rem; color: var(--muted); line-height: 1.6; }
+    .law-card .lc-text strong { color: var(--text); }
+
+    /* ── GLM benchmark ── */
+    .bench-bar-wrap { margin: 18px 0; }
+    .bench-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+    .bench-label { font-size: .8rem; color: var(--muted); width: 180px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .bench-bar-bg { flex: 1; background: var(--surface); border-radius: 99px; height: 10px; overflow: hidden; position: relative; }
+    .bench-bar { height: 100%; border-radius: 99px; transition: width .6s ease; }
+    .bench-bar.b-glm    { background: linear-gradient(90deg, var(--blue), var(--purple)); }
+    .bench-bar.b-claude { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+    .bench-bar.b-gpt    { background: linear-gradient(90deg, var(--green), #22c55e); }
+    .bench-pct { font-family: var(--mono); font-size: .78rem; color: var(--text); width: 48px; text-align: right; }
+
+    /* ── Thinking mode ── */
+    .thinking-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 12px; margin: 16px 0; }
+    .think-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 16px;
+    }
+    .think-card .tk-name { font-weight: 800; font-size: .9rem; color: var(--text); margin-bottom: 6px; }
+    .think-card .tk-desc { font-size: .82rem; color: var(--muted); line-height: 1.65; }
+
+    /* ── Strength/weakness matrix ── */
+    .matrix-table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+    .matrix-table thead th {
+      padding: 10px 14px; background: var(--surface); color: var(--muted);
+      font-size: .74rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border); text-align: left;
+    }
+    .matrix-table tbody td { padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,.04); color: var(--muted); }
+    .matrix-table tbody tr:last-child td { border-bottom: none; }
+    .matrix-table td:first-child { color: var(--text); }
+    .win-glm    { color: var(--blue)   !important; font-weight: 700; }
+    .win-claude { color: var(--accent2) !important; font-weight: 700; }
+
+    /* ── Score card ── */
+    .score-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px,1fr)); gap: 12px; margin: 18px 0; }
+    .score-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+      padding: 18px 16px; text-align: center;
+    }
+    .score-card .sc-label { font-size: .78rem; color: var(--muted); margin-bottom: 8px; }
+    .score-card .sc-score { font-size: 1.6rem; font-weight: 900; color: var(--text); line-height: 1; margin-bottom: 6px; }
+    .score-card .sc-stars { color: var(--yellow); font-size: .88rem; }
+    .score-card.total { border-color: rgba(255,107,53,.35); }
+    .score-card.total .sc-score { color: var(--accent); }
+
+    /* ── Recommend box ── */
+    .rec-box {
+      background: linear-gradient(135deg, rgba(255,107,53,.07), rgba(167,139,250,.05));
+      border: 1px solid rgba(255,107,53,.2); border-radius: var(--radius);
+      padding: 28px 24px; margin-top: 24px;
+    }
+    .rec-box h3 { font-size: 1rem; font-weight: 800; margin-bottom: 16px; color: var(--text); }
+    .rec-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+    .rec-row:last-child { border-bottom: none; }
+    .rec-row .rr-label { font-size: .82rem; color: var(--muted); min-width: 200px; flex-shrink: 0; }
+    .rec-row .rr-val   { font-size: .82rem; color: var(--text); font-weight: 700; }
+
+    /* ── CTA ── */
+    .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 32px; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 11px 24px; border-radius: 9px; font-size: .88rem; font-weight: 700;
+      cursor: pointer; border: none; text-decoration: none !important; transition: transform .16s, filter .16s;
+    }
+    .btn:hover { transform: translateY(-2px); filter: brightness(1.12); }
+    .btn-orange { background: linear-gradient(135deg, var(--accent), #ff8c5a); color: #fff; }
+    .btn-ghost  { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { border-color: var(--accent); color: var(--accent2); }
+
+    /* ── Footer ── */
+    footer { border-top: 1px solid var(--border); padding: 34px 24px; text-align: center; font-size: .8rem; color: var(--muted); }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .page-wrap { grid-template-columns: 1fr; padding: 40px 20px 80px; }
+      .toc { display: none; }
+      .nav-links { display: none; }
+      .cascade-step { grid-template-columns: auto 1fr; }
+      .cascade-step .cs-cost { grid-column: 2; text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <nav>
+    <a href="index.html" class="logo">
+      <div class="logo-mark">&lt;/&gt;</div>
+      Open Code
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html#opencode">OpenCode 소개</a></li>
+      <li><a href="guide.html">설치 가이드</a></li>
+      <li><a href="index.html#topics">주제</a></li>
+      <li><a href="index.html#roadmap">로드맵</a></li>
+    </ul>
+    <span class="nav-pill">비용 가이드</span>
+  </nav>
+</header>
+
+<!-- ══ PAGE ══ -->
+<div class="page-wrap">
+
+  <!-- TOC -->
+  <aside class="toc">
+    <p class="toc-title">// 목차</p>
+    <ul class="toc-list">
+      <li><a href="#intro">📊 2026년 비용 현실</a></li>
+      <li><a href="#free-models">전략 1: 무료 모델</a></li>
+      <li><a href="#free-mimo"   class="sub">└ MiMo-V2-Flash</a></li>
+      <li><a href="#free-devstral" class="sub">└ Devstral 2</a></li>
+      <li><a href="#free-others" class="sub">└ Nemotron / DS V3.1</a></li>
+      <li><a href="#cheap-models">전략 2: 초저가 모델</a></li>
+      <li><a href="#cascade">전략 3: 캐스케이드</a></li>
+      <li><a href="#config">전략 4: 설정 최적화</a></li>
+      <li><a href="#scenarios">실전 시나리오 비교</a></li>
+      <li><a href="#task-guide">작업별 모델 가이드</a></li>
+      <li><a href="#tips">즉시 적용 팁</a></li>
+      <li><a href="#final-config">최종 설정 예시</a></li>
+      <li><a href="#golden-rules">7가지 황금 법칙</a></li>
+      <div class="toc-sep"></div>
+      <li><a href="#glm-intro">🔍 GLM 4.7 심층 분석</a></li>
+      <li><a href="#glm-bench"  class="sub">└ 벤치마크 성능</a></li>
+      <li><a href="#glm-agent"  class="sub">└ 에이전트 특화</a></li>
+      <li><a href="#glm-ui"     class="sub">└ UI 생성 능력</a></li>
+      <li><a href="#glm-weak"   class="sub">└ 약점 분석</a></li>
+      <li><a href="#glm-cost"   class="sub">└ 비용 비교</a></li>
+      <li><a href="#glm-setup"  class="sub">└ 설정 방법</a></li>
+      <li><a href="#glm-score"  class="sub">└ 최종 평가</a></li>
+    </ul>
+  </aside>
+
+  <!-- Content -->
+  <main class="content">
+    <a href="index.html" class="back-btn">← 홈으로 돌아가기</a>
+
+    <p class="page-eyebrow">// openrouter × opencode</p>
+    <h1 class="page-title">💰 OpenRouter로 OpenCode<br>비용 최소화 완벽 가이드</h1>
+    <p class="page-lead">
+      2026년 AI 코딩 비용은 극적으로 하락했습니다.
+      2024년에 <strong>$100/1M 토큰</strong>이었던 작업이 이제 <strong>$20 이하</strong>로 가능하며,
+      무료 모델만으로도 2년 전 GPT-4 수준의 작업을 처리할 수 있습니다.
+      올바른 전략만 있다면 <strong>월 $10~20</strong>으로 전문 개발자 수준의 AI 코딩 환경을 구축할 수 있습니다.
+    </p>
+
+    <!-- ── 가격대 분류 ── -->
+    <section class="g-section" id="intro">
+      <h2><span class="sec-badge green">📊</span> 2026년 현실 — 가격대별 모델 분류</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>티어</th><th>가격 (1M 토큰)</th><th>대표 모델</th><th>용도</th></tr></thead>
+          <tbody>
+            <tr class="tier-free"><td><strong>무료</strong></td><td>$0</td><td>MiMo-V2, Devstral 2, Nemotron</td><td>실험, 학습, 일반 코딩</td></tr>
+            <tr class="tier-low"><td><strong>초저가</strong></td><td>$0.05 – $0.50</td><td>DeepSeek V3.2, Seed Flash</td><td>대량 처리, 프로덕션</td></tr>
+            <tr class="tier-mid"><td><strong>예산형</strong></td><td>$0.50 – $5</td><td>Gemini 3 Flash, GPT-4o Mini</td><td>균형 잡힌 성능</td></tr>
+            <tr class="tier-high"><td><strong>표준</strong></td><td>$5 – $25</td><td>GPT-5.2, Claude Sonnet 4</td><td>고급 추론</td></tr>
+            <tr class="tier-top"><td><strong>프리미엄</strong></td><td>$25 – $200+</td><td>GPT-5.2 Pro, Claude Opus 4.5</td><td>최고 성능</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 전략 1: 무료 ── -->
+    <section class="g-section" id="free-models">
+      <h2><span class="sec-badge green">1</span> 전략 1 — 무료 모델 최대 활용 (비용: $0)</h2>
+      <p>2026년 최고의 무료 코딩 모델들입니다. 대부분의 일반 작업은 이 모델들만으로 해결됩니다.</p>
+
+      <div class="model-grid">
+        <!-- MiMo -->
+        <div class="model-card" id="free-mimo">
+          <div class="mc-head">
+            <span class="mc-icon">⭐</span>
+            <div>
+              <div class="mc-name">Xiaomi MiMo-V2-Flash</div>
+              <span class="mc-badge free">FREE · 1순위 추천</span>
+            </div>
+          </div>
+          <div class="mc-specs">
+            <strong>309B MoE</strong> · 256K 컨텍스트<br>
+            SWE-bench에서 <strong>Claude Sonnet 4.5와 동등</strong>한 성능
+          </div>
+          <ul class="mc-tasks">
+            <li>일반 코딩 작업</li>
+            <li>버그 수정</li>
+            <li>코드 리팩토링</li>
+            <li>기능 구현</li>
+          </ul>
+        </div>
+
+        <!-- Devstral -->
+        <div class="model-card" id="free-devstral">
+          <div class="mc-head">
+            <span class="mc-icon">🤖</span>
+            <div>
+              <div class="mc-name">Devstral 2 2512</div>
+              <span class="mc-badge free">FREE · MIT 오픈소스</span>
+            </div>
+          </div>
+          <div class="mc-specs">
+            Mistral <strong>123B</strong> 에이전트 코딩 모델<br>
+            멀티 파일 오케스트레이션 · 256K 컨텍스트
+          </div>
+          <ul class="mc-tasks">
+            <li>복잡한 멀티 파일 프로젝트</li>
+            <li>프레임워크 인식 작업</li>
+            <li>에이전트 워크플로우</li>
+          </ul>
+        </div>
+
+        <!-- Nemotron -->
+        <div class="model-card" id="free-others">
+          <div class="mc-head">
+            <span class="mc-icon">🟢</span>
+            <div>
+              <div class="mc-name">NVIDIA Nemotron 3 Nano</div>
+              <span class="mc-badge free">FREE · 오픈 웨이트</span>
+            </div>
+          </div>
+          <div class="mc-specs">
+            <strong>30B MoE</strong> 에이전트 AI 전용<br>
+            완전 오픈 웨이트·데이터셋·레시피 · 256K
+          </div>
+          <ul class="mc-tasks">
+            <li>AI 에이전트 작업</li>
+            <li>자동화 워크플로우</li>
+          </ul>
+        </div>
+
+        <!-- DeepSeek V3.1 -->
+        <div class="model-card">
+          <div class="mc-head">
+            <span class="mc-icon">🔮</span>
+            <div>
+              <div class="mc-name">DeepSeek V3.1 Nex-N1</div>
+              <span class="mc-badge free">FREE</span>
+            </div>
+          </div>
+          <div class="mc-specs">
+            에이전트 자율성 & 도구 사용 특화<br>
+            HTML 생성 강점 · 131K 컨텍스트
+          </div>
+          <ul class="mc-tasks">
+            <li>HTML/CSS 생성</li>
+            <li>도구 기반 자동화</li>
+          </ul>
+        </div>
+      </div>
+
+      <h3>무료 모델 opencode.json 설정</h3>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>{
+  <span class="kw">"$schema"</span>: <span class="cv">"https://opencode.ai/config.json"</span>,
+  <span class="kw">"provider"</span>: {
+    <span class="kw">"openrouter"</span>: {
+      <span class="kw">"models"</span>: {
+        <span class="cv">"xiaomi/mimo-v2-flash:free"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"MiMo V2 Flash (무료)"</span>
+        },
+        <span class="cv">"mistralai/devstral-2-2512:free"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"Devstral 2 (무료 코딩 특화)"</span>
+        }
+      }
+    }
+  }
+}</code></pre>
+      </div>
+
+      <div class="callout warn">
+        ⚠️ <strong>속도 제한 안내:</strong>
+        OpenRouter 크레딧을 <strong>$10 이상 충전</strong>하면 무료 모델 1,000 요청/일 사용 가능.
+        미충전 시 50 요청/일로 제한됩니다. $10 충전 한 번으로 무료 모델을 사실상 무제한 활용 가능합니다.
+      </div>
+    </section>
+
+    <!-- ── 전략 2: 초저가 ── -->
+    <section class="g-section" id="cheap-models">
+      <h2><span class="sec-badge blue">2</span> 전략 2 — 초저가 모델로 70% 절감</h2>
+
+      <h3>DeepSeek V3.2 — 가성비 킹 👑</h3>
+      <p>
+        <strong>$0.25 입력 / $0.38 출력</strong> per 1M 토큰.
+        GPT-4o의 <strong>90% 성능을 1/40 가격</strong>에 제공합니다.
+        163K 컨텍스트, 강력한 추론 및 도구 사용을 지원합니다.
+      </p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>작업</th><th>Claude Opus 4</th><th>DeepSeek V3.2</th><th>절감액</th></tr></thead>
+          <tbody>
+            <tr><td>복잡한 코딩 (500K 토큰)</td><td>$50–75</td><td>$0.50</td><td style="color:var(--green);font-weight:700;">99% 절감</td></tr>
+            <tr><td>일반 기능 추가 (200K 토큰)</td><td>$20–30</td><td>$0.20</td><td style="color:var(--green);font-weight:700;">99% 절감</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>MiniMax M2.1 — 코딩 특화 저비용</h3>
+      <p>
+        <strong>$0.28 입력 / $1.20 출력</strong> per 1M 토큰.
+        10B 활성 파라미터, SWE-Bench Multilingual <strong>72.5%</strong> 달성, 196K 컨텍스트.
+        AI 에이전트 워크플로우, 멀티 파일 코드베이스, 복잡한 리팩토링에 최적화되어 있습니다.
+      </p>
+
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>{
+  <span class="kw">"provider"</span>: {
+    <span class="kw">"openrouter"</span>: {
+      <span class="kw">"models"</span>: {
+        <span class="cv">"deepseek/deepseek-v3.2"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"DeepSeek V3.2 (최고 가성비)"</span>
+        },
+        <span class="cv">"minimax/minimax-m2-1"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"MiniMax M2.1 (코딩 특화)"</span>
+        }
+      }
+    }
+  }
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- ── 전략 3: 캐스케이드 ── -->
+    <section class="g-section" id="cascade">
+      <h2><span class="sec-badge purple">3</span> 전략 3 — 캐스케이드 워크플로우 (70–85% 절감)</h2>
+      <p>
+        <strong>핵심 개념:</strong> 간단한 작업은 저렴한 무료 모델, 복잡한 작업만 프리미엄 모델 사용.
+        단계별로 적절한 모델을 매칭하면 전체 비용을 85~93% 절감할 수 있습니다.
+      </p>
+
+      <div class="cascade">
+        <div class="cascade-step">
+          <span class="cs-num">1</span>
+          <div class="cs-body">
+            <h4>탐색 (Explore)</h4>
+            <p>코드베이스 스캔, 파일 구조 파악</p>
+          </div>
+          <div class="cs-cost">
+            <div class="cs-model">Devstral 2</div>
+            <div class="cs-price">$0</div>
+          </div>
+        </div>
+        <div class="cascade-arrow">↓</div>
+        <div class="cascade-step">
+          <span class="cs-num">2</span>
+          <div class="cs-body">
+            <h4>계획 (Plan)</h4>
+            <p>구현 전략 수립, 변경 범위 결정</p>
+          </div>
+          <div class="cs-cost">
+            <div class="cs-model">MiMo-V2</div>
+            <div class="cs-price">$0</div>
+          </div>
+        </div>
+        <div class="cascade-arrow">↓</div>
+        <div class="cascade-step">
+          <span class="cs-num">3</span>
+          <div class="cs-body">
+            <h4>구현 (Implement)</h4>
+            <p>실제 코드 작성, 멀티 파일 수정</p>
+          </div>
+          <div class="cs-cost">
+            <div class="cs-model">MiniMax M2.1</div>
+            <div class="cs-price paid">~$1.50</div>
+          </div>
+        </div>
+        <div class="cascade-arrow">↓</div>
+        <div class="cascade-step">
+          <span class="cs-num">4</span>
+          <div class="cs-body">
+            <h4>디버깅 (Debug)</h4>
+            <p>오류 수정, 테스트</p>
+          </div>
+          <div class="cs-cost">
+            <div class="cs-model">DeepSeek V3.2</div>
+            <div class="cs-price paid">~$0.50</div>
+          </div>
+        </div>
+        <div class="cascade-arrow">↓</div>
+        <div class="cascade-step">
+          <span class="cs-num">5</span>
+          <div class="cs-body">
+            <h4>최종 리뷰 (Review)</h4>
+            <p>코드 품질 검토, 보안 체크 (필요시에만)</p>
+          </div>
+          <div class="cs-cost">
+            <div class="cs-model">Claude Sonnet 4</div>
+            <div class="cs-price paid">~$5</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cascade-total">
+        총 비용 <strong>~$7</strong> vs Claude Opus로만 작업 시 <strong>$50–100+</strong>
+        &nbsp;·&nbsp; 절감률 <strong>85–93% 💰</strong>
+      </div>
+    </section>
+
+    <!-- ── 전략 4: 설정 최적화 ── -->
+    <section class="g-section" id="config">
+      <h2><span class="sec-badge">4</span> 전략 4 — OpenCode 설정 최적화</h2>
+
+      <h3>A. 작업별 모델 자동 선택 설정</h3>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm">// ~/.config/opencode/opencode.json</span>
+{
+  <span class="kw">"$schema"</span>: <span class="cv">"https://opencode.ai/config.json"</span>,
+  <span class="kw">"provider"</span>: {
+    <span class="kw">"openrouter"</span>: {
+      <span class="kw">"models"</span>: {
+        <span class="cm">// 기본 모델 (일반 작업)</span>
+        <span class="cv">"xiaomi/mimo-v2-flash:free"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"🆓 MiMo (무료 · 기본)"</span>,
+          <span class="kw">"default"</span>: true
+        },
+        <span class="cm">// 복잡한 코딩</span>
+        <span class="cv">"minimax/minimax-m2-1"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"💻 MiniMax (코딩 특화)"</span>,
+          <span class="kw">"limit"</span>: { <span class="kw">"context"</span>: 196000, <span class="kw">"output"</span>: 65536 }
+        },
+        <span class="cm">// 가성비 범용</span>
+        <span class="cv">"deepseek/deepseek-v3.2"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"⚡ DeepSeek (최고 가성비)"</span>
+        },
+        <span class="cm">// 긴급/중요 작업</span>
+        <span class="cv">"anthropic/claude-sonnet-4"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"🔥 Claude Sonnet 4 (프리미엄)"</span>
+        }
+      }
+    }
+  }
+}</code></pre>
+      </div>
+
+      <h3>B. 환경 변수 및 별칭 설정</h3>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm"># ~/.bashrc 또는 ~/.zshrc에 추가</span>
+export OPENROUTER_API_KEY=<span class="cv">"sk-or-v1-your-key-here"</span>
+
+<span class="cm"># 모델별 빠른 실행 별칭</span>
+alias oc-free=<span class="cv">'opencode --model "xiaomi/mimo-v2-flash:free"'</span>
+alias oc-cheap=<span class="cv">'opencode --model "deepseek/deepseek-v3.2"'</span>
+alias oc-coding=<span class="cv">'opencode --model "minimax/minimax-m2-1"'</span></code></pre>
+      </div>
+    </section>
+
+    <!-- ── 시나리오 비교 ── -->
+    <section class="g-section" id="scenarios">
+      <h2><span class="sec-badge">💡</span> 실전 비용 비교 시나리오</h2>
+
+      <div class="scenario-cards">
+        <div class="scen-card">
+          <div class="sc-header">시나리오 1 — 중형 웹 앱 기능 추가 (2FA 인증 시스템)</div>
+          <div class="sc-rows">
+            <div class="scen-row bad">
+              <span class="sr-method">❌ 비추천</span>
+              <span class="sr-model">Claude Opus 4.5만 사용</span>
+              <span class="sr-cost">$80–120</span>
+            </div>
+            <div class="scen-row ok">
+              <span class="sr-method">⚠️ 기본</span>
+              <span class="sr-model">Claude Sonnet 4만 사용</span>
+              <span class="sr-cost">$30–50</span>
+            </div>
+            <div class="scen-row best">
+              <span class="sr-method">✅ 추천</span>
+              <span class="sr-model">캐스케이드 (MiMo → DeepSeek → Sonnet)</span>
+              <span class="sr-cost">$2–7</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scen-card">
+          <div class="sc-header">시나리오 2 — 대규모 리팩토링 (레거시 500개 파일 현대화)</div>
+          <div class="sc-rows">
+            <div class="scen-row bad">
+              <span class="sr-method">❌ 비추천</span>
+              <span class="sr-model">Claude Opus 4.5</span>
+              <span class="sr-cost">$500–800</span>
+            </div>
+            <div class="scen-row best">
+              <span class="sr-method">✅ 추천</span>
+              <span class="sr-model">Devstral 2 (무료) + MiniMax 검증</span>
+              <span class="sr-cost">$15–25</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="scen-card">
+          <div class="sc-header">시나리오 3 — 일상 코딩 (한 달 기준)</div>
+          <div class="sc-rows">
+            <div class="scen-row bad">
+              <span class="sr-method">❌ 비추천</span>
+              <span class="sr-model">Claude Pro 구독 + API</span>
+              <span class="sr-cost">$100–200/월</span>
+            </div>
+            <div class="scen-row ok">
+              <span class="sr-method">⚠️ 기본</span>
+              <span class="sr-model">OpenAI API만</span>
+              <span class="sr-cost">$50–100/월</span>
+            </div>
+            <div class="scen-row best">
+              <span class="sr-method">✅ 추천</span>
+              <span class="sr-model">OpenRouter 무료 90% + 유료 10%</span>
+              <span class="sr-cost">$5–15/월</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── 작업별 가이드 ── -->
+    <section class="g-section" id="task-guide">
+      <h2><span class="sec-badge">🎯</span> 작업별 최적 모델 선택 가이드</h2>
+      <div class="task-table-wrap">
+        <table class="task-table">
+          <thead><tr><th>작업 유형</th><th>추천 모델</th><th>예상 비용</th></tr></thead>
+          <tbody>
+            <tr><td>코드 설명·이해</td>          <td class="t-model">MiMo-V2 (무료)</td>     <td class="t-cost">$0</td></tr>
+            <tr><td>간단한 버그 수정</td>         <td class="t-model">MiMo-V2 (무료)</td>     <td class="t-cost">$0</td></tr>
+            <tr><td>새 기능 추가</td>            <td class="t-model">Devstral 2 (무료)</td>  <td class="t-cost">$0</td></tr>
+            <tr><td>복잡한 리팩토링</td>          <td class="t-model">MiniMax M2.1</td>       <td class="t-cost">$1–3</td></tr>
+            <tr><td>멀티파일 오케스트레이션</td>   <td class="t-model">Devstral 2</td>         <td class="t-cost">$0–0.50</td></tr>
+            <tr><td>성능 최적화</td>             <td class="t-model">DeepSeek V3.2</td>      <td class="t-cost">$0.50–1</td></tr>
+            <tr><td>보안 리뷰</td>              <td class="t-model">Claude Sonnet 4</td>     <td class="t-cost">$3–5</td></tr>
+            <tr><td>미션 크리티컬 코드</td>       <td class="t-model">Claude Opus 4.5</td>    <td class="t-cost">$10–20</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 즉시 적용 팁 ── -->
+    <section class="g-section" id="tips">
+      <h2><span class="sec-badge">⚡</span> 즉시 적용 가능한 실천 팁</h2>
+
+      <h4>팁 1 — 항상 무료 모델부터 시작</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm"># 첫 시도는 무료로</span>
+/models  <span class="cm"># MiMo-V2 선택</span>
+
+<span class="cm"># 만족스럽지 않으면 업그레이드</span>
+/models  <span class="cm"># DeepSeek V3.2 선택</span></code></pre>
+      </div>
+
+      <h4>팁 2 — Plan 모드로 비용 예측</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>&lt;Tab&gt;  <span class="cm"># Plan 모드 전환</span>
+"이 작업 구현하는데 토큰 몇 개 필요해?"
+<span class="cm"># 답변 확인 후 모델 선택</span></code></pre>
+      </div>
+
+      <h4>팁 3 — 작은 청크로 나누기</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm">❌ "전체 앱을 리팩토링해줘"  →  대량 토큰 낭비</span>
+<span class="cm">✅ "먼저 auth.ts 파일만 리팩토링해줘"  →  단계적 접근</span></code></pre>
+      </div>
+
+      <h4>팁 4 — 컨텍스트 최소화</h4>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>@src/core/auth.ts  <span class="cm"># ✅ 필요한 파일만</span>
+<span class="cm"># @src/**/*        ❌ 전체 로드 금지</span></code></pre>
+      </div>
+
+      <h4>팁 5 — 긴 대화는 새 세션으로</h4>
+      <p>대화가 길어지면 컨텍스트가 누적되어 비용이 증가합니다. <code>/share</code>로 저장 후 새 세션을 시작하세요.</p>
+    </section>
+
+    <!-- ── 최종 설정 ── -->
+    <section class="g-section" id="final-config">
+      <h2><span class="sec-badge">🔧</span> 최종 opencode.json — 비용 최적화 버전</h2>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>{
+  <span class="kw">"$schema"</span>: <span class="cv">"https://opencode.ai/config.json"</span>,
+  <span class="kw">"provider"</span>: {
+    <span class="kw">"openrouter"</span>: {
+      <span class="kw">"options"</span>: {
+        <span class="kw">"baseURL"</span>: <span class="cv">"https://openrouter.ai/api/v1"</span>,
+        <span class="kw">"headers"</span>: {
+          <span class="cv">"HTTP-Referer"</span>: <span class="cv">"https://myapp.com"</span>,
+          <span class="cv">"X-Title"</span>: <span class="cv">"MyDev"</span>
+        }
+      },
+      <span class="kw">"models"</span>: {
+        <span class="cm">// 티어 1: 무료 (기본값)</span>
+        <span class="cv">"xiaomi/mimo-v2-flash:free"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"🆓 MiMo V2 Flash"</span>, <span class="kw">"default"</span>: true
+        },
+        <span class="cv">"mistralai/devstral-2-2512:free"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"🆓 Devstral 2 (코딩)"</span>
+        },
+        <span class="cm">// 티어 2: 초저가</span>
+        <span class="cv">"deepseek/deepseek-v3.2"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"⚡ DeepSeek V3.2 ($0.25/$0.38)"</span>
+        },
+        <span class="cv">"minimax/minimax-m2-1"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"💻 MiniMax M2.1 ($0.28/$1.20)"</span>
+        },
+        <span class="cm">// 티어 3: 프리미엄 (필요시만)</span>
+        <span class="cv">"anthropic/claude-sonnet-4"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"🔥 Claude Sonnet 4 ($3/$15)"</span>
+        }
+      }
+    }
+  }
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- ── 황금 법칙 ── -->
+    <section class="g-section" id="golden-rules">
+      <h2><span class="sec-badge green">📚</span> 7가지 황금 법칙</h2>
+      <div class="law-grid">
+        <div class="law-card"><div class="lc-ico">🆓</div><div class="lc-num">Rule 01</div><div class="lc-text"><strong>무료부터 시작</strong> — MiMo-V2나 Devstral 2로 90% 작업 해결</div></div>
+        <div class="law-card"><div class="lc-ico">💰</div><div class="lc-num">Rule 02</div><div class="lc-text"><strong>가성비 모델 활용</strong> — DeepSeek V3.2로 복잡한 작업을 1/40 가격에</div></div>
+        <div class="law-card"><div class="lc-ico">🔄</div><div class="lc-num">Rule 03</div><div class="lc-text"><strong>캐스케이드 워크플로우</strong> — 단계별 적절한 모델 매칭</div></div>
+        <div class="law-card"><div class="lc-ico">💾</div><div class="lc-num">Rule 04</div><div class="lc-text"><strong>컨텍스트 캐싱</strong> — 반복 작업 시 최대 90% 할인</div></div>
+        <div class="law-card"><div class="lc-ico">📊</div><div class="lc-num">Rule 05</div><div class="lc-text"><strong>예산 한도 설정</strong> — API 키에 월 한도 지정</div></div>
+        <div class="law-card"><div class="lc-ico">🎯</div><div class="lc-num">Rule 06</div><div class="lc-text"><strong>작업별 모델 매칭</strong> — 간단한 작업에 비싼 모델 낭비 금지</div></div>
+        <div class="law-card"><div class="lc-ico">📈</div><div class="lc-num">Rule 07</div><div class="lc-text"><strong>모니터링</strong> — 정기적으로 사용량 및 비용 확인</div></div>
+      </div>
+
+      <div class="callout gold" style="margin-top:28px;">
+        🎉 <strong>결론:</strong> OpenRouter + OpenCode 조합 시 <strong>월 $10–20</strong>으로 전문 개발자 수준의 AI 코딩 환경 구축 가능.
+        Claude Pro ($100/월) 대비 <strong>80–90% 비용 절감</strong>. 무료 모델만으로 대부분의 일상 코딩 작업 해결 가능.
+      </div>
+    </section>
+
+    <!-- ════════ PART 2 ════════ -->
+    <div class="part-divider">Part 2 · GLM 4.7 심층 분석</div>
+
+    <section class="g-section" id="glm-intro">
+      <h2><span class="sec-badge blue">🔍</span> GLM 4.7 심층 분석 — 무료로 쓸만한가?</h2>
+      <div class="callout tip">
+        ✅ <strong>결론부터:</strong> 충분히 쓸만합니다. 특히 무료로 사용할 수 있다는 점을 고려하면 <strong>매우 훌륭한 선택</strong>입니다.
+        다만, 상황에 따라 장단점이 명확하니 아래에서 구체적으로 살펴봅니다.
+      </div>
+
+      <h3>기본 스펙</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>항목</th><th>내용</th></tr></thead>
+          <tbody>
+            <tr><td>개발사</td><td>Z.AI (중국 Zhipu AI)</td></tr>
+            <tr><td>출시일</td><td>2025년 12월 22일</td></tr>
+            <tr><td>파라미터</td><td>~358B (MoE) · 활성화 32B/토큰</td></tr>
+            <tr><td>컨텍스트</td><td>204,800 토큰</td></tr>
+            <tr><td>최대 출력</td><td>131,072 토큰</td></tr>
+            <tr><td>라이선스</td><td>오픈소스 (오픈 웨이트)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 벤치마크 ── -->
+    <section class="g-section" id="glm-bench">
+      <h2><span class="sec-badge blue">📊</span> 코딩 성능 — 벤치마크 비교</h2>
+
+      <h3>주요 벤치마크 점수 비교</h3>
+      <div class="bench-bar-wrap">
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:14px;">LiveCodeBench (높을수록 우수)</p>
+        <div class="bench-row">
+          <span class="bench-label">GLM 4.7</span>
+          <div class="bench-bar-bg"><div class="bench-bar b-glm" style="width:84.9%"></div></div>
+          <span class="bench-pct">84.9%</span>
+        </div>
+        <div class="bench-row">
+          <span class="bench-label">GPT-5.1</span>
+          <div class="bench-bar-bg"><div class="bench-bar b-gpt" style="width:87%"></div></div>
+          <span class="bench-pct">87.0%</span>
+        </div>
+        <div class="bench-row">
+          <span class="bench-label">Claude Sonnet 4.5</span>
+          <div class="bench-bar-bg"><div class="bench-bar b-claude" style="width:64%"></div></div>
+          <span class="bench-pct">64.0%</span>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-top:20px;">
+        <table>
+          <thead><tr><th>벤치마크</th><th>GLM 4.7</th><th>Claude Sonnet 4.5</th><th>GPT-5.1</th><th>평가</th></tr></thead>
+          <tbody>
+            <tr><td>LiveCodeBench</td><td style="color:var(--blue);font-weight:700;">84.9%</td><td>64.0%</td><td>87.0%</td><td style="color:var(--blue);">🏆 Claude 대비 압승</td></tr>
+            <tr><td>SWE-bench Verified</td><td>73.8%</td><td>77.2%</td><td>76.3%</td><td>✅ 경쟁력 있음</td></tr>
+            <tr><td>SWE-bench Multilingual</td><td style="color:var(--blue);font-weight:700;">66.7%</td><td>68.0%</td><td>—</td><td style="color:var(--blue);">✅ 다국어 강점</td></tr>
+            <tr><td>Terminal Bench 2.0</td><td>41.0%</td><td>42.8%</td><td>47.6%</td><td>✅ 터미널 작업 우수</td></tr>
+            <tr><td>τ²-Bench (도구 사용)</td><td style="color:var(--blue);font-weight:700;">87.4%</td><td>87.2%</td><td>82.7%</td><td style="color:var(--blue);">🏆 최고 수준</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info">
+        💡 <strong>핵심:</strong> LiveCodeBench에서 Claude Sonnet 4.5를 <strong>20% 이상</strong> 앞서며,
+        오픈소스 모델 중 코딩 분야 <strong>1위</strong> (LMArena Code Arena).
+        GPT-5.2와 비교 가능한 수준입니다.
+      </div>
+    </section>
+
+    <!-- ── 에이전트 ── -->
+    <section class="g-section" id="glm-agent">
+      <h2><span class="sec-badge blue">🤖</span> 에이전트 작업 특화 — Thinking Mode</h2>
+      <p>GLM 4.7의 가장 큰 특징은 <strong>3가지 Thinking 모드</strong>로 추론 과정을 제어할 수 있다는 것입니다.</p>
+
+      <div class="thinking-cards">
+        <div class="think-card">
+          <div class="tk-name">Interleaved Thinking</div>
+          <div class="tk-desc">매 응답마다 사고 과정을 표시합니다. 복잡한 문제에서 추론의 신뢰성을 높입니다.</div>
+        </div>
+        <div class="think-card">
+          <div class="tk-name">Preserved Thinking</div>
+          <div class="tk-desc">대화 전체에서 사고 과정을 유지합니다. 6턴 이상 긴 대화에서 일관성을 향상시킵니다.</div>
+        </div>
+        <div class="think-card">
+          <div class="tk-name">Turn-level Thinking</div>
+          <div class="tk-desc">필요시에만 켜고 끌 수 있습니다. 비용과 속도를 상황에 맞게 조절 가능합니다.</div>
+        </div>
+      </div>
+
+      <h3>추론 능력 개선폭</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>벤치마크</th><th>GLM 4.7</th><th>GLM 4.6</th><th>개선폭</th></tr></thead>
+          <tbody>
+            <tr><td>HLE (도구 사용)</td><td style="color:var(--green);font-weight:700;">42.8%</td><td>30.4%</td><td style="color:var(--green);">+40%</td></tr>
+            <tr><td>AIME 2025 (수학)</td><td>95.7%</td><td>93.9%</td><td style="color:var(--green);">+2%</td></tr>
+            <tr><td>GPQA-Diamond</td><td>85.7%</td><td>81.0%</td><td style="color:var(--green);">+5.8%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── UI 생성 ── -->
+    <section class="g-section" id="glm-ui">
+      <h2><span class="sec-badge blue">🎨</span> UI/프론트엔드 생성 능력</h2>
+      <p>
+        GLM 4.7은 <strong>Vibe Coding 능력</strong>이 특히 뛰어납니다.
+        깔끔하고 현대적인 웹페이지 생성, 레이아웃과 사이징 정확도, React/Vue 컴포넌트,
+        다크모드·애니메이션 등 최신 트렌드를 잘 반영합니다.
+      </p>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm"># 이런 요청에 탁월합니다</span>
+"다크모드 + 볼드 헤딩 + 애니메이션 티커가 있는 웹사이트 만들어줘"
+<span class="cm"># → 즉시 작동하는 고품질 HTML/CSS/JS 생성 ✅</span></code></pre>
+      </div>
+      <p>또한 한국어·중국어·일본어 등 아시아 언어 지원이 우수하여 국내 프로젝트에서 강점을 보입니다.</p>
+    </section>
+
+    <!-- ── 약점 ── -->
+    <section class="g-section" id="glm-weak">
+      <h2><span class="sec-badge">⚠️</span> 약점 분석</h2>
+
+      <h3>1. 안정성 이슈 보고</h3>
+      <div class="callout warn">
+        ❌ 장기 세션에서 가끔 "말도 안 되는 에러" 발생<br>
+        ❌ 복잡한 프로젝트에서 MiniMax보다 불안정<br>
+        ❌ 벤치마크 성능 ≠ 실제 사용 경험 (과장된 측면 있음)
+      </div>
+
+      <h3>2. 작업 유형별 강약점</h3>
+      <div class="table-wrap">
+        <table class="matrix-table">
+          <thead><tr><th>작업 유형</th><th>GLM 4.7</th><th>Claude Sonnet 4.5</th><th>승자</th></tr></thead>
+          <tbody>
+            <tr><td>복잡한 아키텍처 설계</td><td>⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td class="win-claude">Claude</td></tr>
+            <tr><td>보안 코드 리뷰</td>       <td>⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td class="win-claude">Claude</td></tr>
+            <tr><td>창의적 문제 해결</td>      <td>⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td class="win-claude">Claude</td></tr>
+            <tr><td>일반 코딩</td>           <td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td class="win-glm">GLM 4.7</td></tr>
+            <tr><td>프론트엔드 생성</td>       <td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td class="win-glm">GLM 4.7</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 비용 비교 ── -->
+    <section class="g-section" id="glm-cost">
+      <h2><span class="sec-badge green">💰</span> 비용 비교 — 무료 모델 순위</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>모델</th><th>코딩 성능</th><th>안정성</th><th>다국어</th><th>종합</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Xiaomi MiMo-V2</strong></td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td style="color:var(--yellow);">🏆 1순위</td></tr>
+            <tr><td><strong>GLM 4.7</strong></td>       <td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐</td>    <td>⭐⭐⭐⭐⭐</td><td style="color:var(--muted);">🥈 2순위</td></tr>
+            <tr><td><strong>Devstral 2</strong></td>    <td>⭐⭐⭐⭐</td>  <td>⭐⭐⭐⭐</td>  <td>⭐⭐⭐</td>    <td style="color:var(--muted);">🥉 3순위</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>유료 시 가격 비교</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>모델</th><th>입력 (1M)</th><th>출력 (1M)</th><th>비고</th></tr></thead>
+          <tbody>
+            <tr><td><strong>GLM 4.7</strong></td>           <td>$0.40</td><td>$1.50</td><td>OpenRouter 기준</td></tr>
+            <tr><td><strong>DeepSeek V3.2</strong></td>     <td>$0.25</td><td>$0.38</td><td style="color:var(--green);font-weight:700;">최저가</td></tr>
+            <tr><td><strong>Claude Sonnet 4</strong></td>   <td>$3.00</td><td>$15.00</td><td>7.5배 비쌈</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── 설정 ── -->
+    <section class="g-section" id="glm-setup">
+      <h2><span class="sec-badge">🔧</span> OpenCode에서 GLM 4.7 설정</h2>
+
+      <h3>무료 버전 (Z.AI)</h3>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code><span class="cm">// ~/.config/opencode/opencode.json</span>
+{
+  <span class="kw">"$schema"</span>: <span class="cv">"https://opencode.ai/config.json"</span>,
+  <span class="kw">"provider"</span>: {
+    <span class="kw">"z-ai"</span>: {
+      <span class="kw">"npm"</span>: <span class="cv">"@ai-sdk/openai-compatible"</span>,
+      <span class="kw">"name"</span>: <span class="cv">"Z.AI GLM"</span>,
+      <span class="kw">"options"</span>: {
+        <span class="kw">"baseURL"</span>: <span class="cv">"https://api.z.ai/v1"</span>
+      },
+      <span class="kw">"models"</span>: {
+        <span class="cv">"glm-4.7"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"GLM 4.7 (무료)"</span>,
+          <span class="kw">"limit"</span>: { <span class="kw">"context"</span>: 204800, <span class="kw">"output"</span>: 131072 }
+        }
+      }
+    }
+  }
+}</code></pre>
+      </div>
+
+      <p>
+        무료 플랜 가입:
+        <a href="https://z.ai/subscribe" target="_blank" rel="noopener">z.ai/subscribe ↗</a>
+        후 <code>/connect</code> → Z.AI 선택 → API 키 입력
+      </p>
+
+      <h3>OpenRouter 버전 (유료)</h3>
+      <div class="code-wrap">
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+        <pre><code>{
+  <span class="kw">"provider"</span>: {
+    <span class="kw">"openrouter"</span>: {
+      <span class="kw">"models"</span>: {
+        <span class="cv">"z-ai/glm-4.7"</span>: {
+          <span class="kw">"name"</span>: <span class="cv">"GLM 4.7 ($0.40/$1.50)"</span>
+        }
+      }
+    }
+  }
+}</code></pre>
+      </div>
+    </section>
+
+    <!-- ── 최종 평가 ── -->
+    <section class="g-section" id="glm-score">
+      <h2><span class="sec-badge purple">🏆</span> GLM 4.7 최종 평가</h2>
+
+      <div class="score-grid">
+        <div class="score-card">
+          <div class="sc-label">코딩 능력</div>
+          <div class="sc-score">9/10</div>
+          <div class="sc-stars">⭐⭐⭐⭐⭐</div>
+        </div>
+        <div class="score-card">
+          <div class="sc-label">안정성</div>
+          <div class="sc-score">6/10</div>
+          <div class="sc-stars">⭐⭐⭐</div>
+        </div>
+        <div class="score-card">
+          <div class="sc-label">UI 생성</div>
+          <div class="sc-score">10/10</div>
+          <div class="sc-stars">⭐⭐⭐⭐⭐</div>
+        </div>
+        <div class="score-card">
+          <div class="sc-label">다국어</div>
+          <div class="sc-score">9/10</div>
+          <div class="sc-stars">⭐⭐⭐⭐⭐</div>
+        </div>
+        <div class="score-card">
+          <div class="sc-label">가성비</div>
+          <div class="sc-score">10/10</div>
+          <div class="sc-stars">⭐⭐⭐⭐⭐</div>
+        </div>
+        <div class="score-card total">
+          <div class="sc-label">종합</div>
+          <div class="sc-score">8.4/10</div>
+          <div class="sc-stars" style="color:var(--accent);">강력 추천</div>
+        </div>
+      </div>
+
+      <div class="rec-box" style="margin-top:28px;">
+        <h3>상황별 추천</h3>
+        <div class="rec-row">
+          <span class="rr-label">무료로 실험하고 싶다면</span>
+          <span class="rr-val">GLM 4.7 또는 MiMo-V2 (둘 다 추천!)</span>
+        </div>
+        <div class="rec-row">
+          <span class="rr-label">프론트엔드 개발자라면</span>
+          <span class="rr-val">GLM 4.7 최우선 추천! 🏆</span>
+        </div>
+        <div class="rec-row">
+          <span class="rr-label">안정성이 최우선이라면</span>
+          <span class="rr-val">MiMo-V2 > GLM 4.7</span>
+        </div>
+        <div class="rec-row">
+          <span class="rr-label">아시아권 프로젝트라면</span>
+          <span class="rr-val">GLM 4.7 강력 추천! 🌏</span>
+        </div>
+        <div class="rec-row">
+          <span class="rr-label">미션 크리티컬 작업이라면</span>
+          <span class="rr-val">Claude Sonnet 4 사용 (유료)</span>
+        </div>
+      </div>
+
+      <div class="callout gold" style="margin-top:24px;">
+        🎉 <strong>결론:</strong>
+        GLM 4.7은 무료로 사용할 수 있고, 코딩 벤치마크 최상위권이며, UI/프론트엔드에서 탁월합니다.
+        단, 안정성이 간헐적으로 보고되므로 <strong>1차: GLM 4.7 또는 MiMo-V2 (무료) → 2차: DeepSeek V3.2 → 3차: Claude Sonnet 4</strong>
+        순서로 활용하면 대부분의 작업을 최소 비용으로 처리할 수 있습니다.
+      </div>
+
+      <div class="cta-row">
+        <a href="guide.html" class="btn btn-orange">🛠️ 설치 가이드 보기</a>
+        <a href="index.html" class="btn btn-ghost">← 홈으로</a>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <p>
+    Open Code · 바이브 코딩을 위한 오픈 기술 ·
+    Built on <a href="https://pages.github.com" target="_blank">GitHub Pages</a>
+    · 2026
+  </p>
+</footer>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.nextElementSibling;
+    navigator.clipboard.writeText(pre.innerText || pre.textContent).then(() => {
+      btn.textContent = 'copied!';
+      setTimeout(() => btn.textContent = 'copy', 2000);
+    }).catch(() => {
+      btn.textContent = 'error';
+      setTimeout(() => btn.textContent = 'copy', 2000);
+    });
+  }
+</script>
+
+</body>
+</html>
