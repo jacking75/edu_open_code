@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>oh-my-opencode 완전 가이드 — Open Code</title>
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FF6B35'/%3E%3Crect x='10' y='14' width='44' height='38' rx='6' fill='%23FF8C5A'/%3E%3Crect x='29' y='6' width='6' height='10' rx='3' fill='white'/%3E%3Ccircle cx='32' cy='5' r='5' fill='white'/%3E%3Crect x='14' y='20' width='12' height='10' rx='3' fill='%230a0a0f'/%3E%3Crect x='38' y='20' width='12' height='10' rx='3' fill='%230a0a0f'/%3E%3Ccircle cx='20' cy='25' r='4' fill='%2360a5fa'/%3E%3Ccircle cx='44' cy='25' r='4' fill='%2360a5fa'/%3E%3Crect x='14' y='36' width='36' height='10' rx='3' fill='%230a0a0f'/%3E%3Crect x='21' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3Crect x='31' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3Crect x='41' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3C/svg%3E" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0a0f;
+      --surface:  #111118;
+      --card:     #17171f;
+      --border:   #27273a;
+      --accent:   #ff6b35;
+      --accent2:  #ff9a6c;
+      --green:    #3ddc84;
+      --blue:     #60a5fa;
+      --purple:   #a78bfa;
+      --text:     #f0f0f8;
+      --muted:    #7070a0;
+      --radius:   13px;
+      --font:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono:     'Fira Code', 'Cascadia Code', 'SFMono-Regular', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font); background: var(--bg); color: var(--text); line-height: 1.7; }
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* ── Header ── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,0.88);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    nav {
+      max-width: 1100px; margin: 0 auto; padding: 0 24px;
+      height: 60px; display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 1.05rem; color: var(--text);
+      letter-spacing: -.01em; text-decoration: none !important;
+    }
+    .logo-mark {
+      width: 32px; height: 32px; background: var(--accent); border-radius: 8px;
+      display: grid; place-items: center; font-family: var(--mono);
+      font-size: 1rem; font-weight: 900; color: #fff; flex-shrink: 0;
+    }
+    .nav-links { display: flex; gap: 26px; list-style: none; }
+    .nav-links a { color: var(--muted); font-size: 0.875rem; transition: color .2s; }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+    .nav-pill {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      background: rgba(167,139,250,.15); color: var(--purple);
+      border: 1px solid rgba(167,139,250,.35); padding: 4px 12px; border-radius: 99px;
+    }
+
+    /* ── Layout ── */
+    .page-wrap {
+      max-width: 1060px; margin: 0 auto; padding: 64px 24px 100px;
+      display: grid; grid-template-columns: 210px 1fr; gap: 48px; align-items: start;
+    }
+
+    /* ── Sidebar TOC ── */
+    .toc { position: sticky; top: 84px; }
+    .toc-title {
+      font-family: var(--mono); font-size: 0.7rem; color: var(--accent);
+      letter-spacing: .1em; text-transform: uppercase; margin-bottom: 14px;
+    }
+    .toc-list { list-style: none; border-left: 2px solid var(--border); padding-left: 16px; }
+    .toc-list li { margin-bottom: 1px; }
+    .toc-list a {
+      color: var(--muted); font-size: 0.8rem; display: block;
+      padding: 4px 0; transition: color .2s; line-height: 1.4;
+    }
+    .toc-list a:hover { color: var(--text); text-decoration: none; }
+    .toc-list .toc-sub { padding-left: 12px; font-size: 0.75rem; }
+
+    /* ── Content ── */
+    .content { min-width: 0; }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 0.8rem; color: var(--muted); border: 1px solid var(--border);
+      border-radius: 6px; padding: 5px 12px; margin-bottom: 32px;
+      transition: color .2s, border-color .2s;
+    }
+    .back-btn:hover { color: var(--text); border-color: var(--accent); text-decoration: none; }
+    .page-eyebrow {
+      font-family: var(--mono); font-size: 0.72rem; color: var(--purple);
+      letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .page-title {
+      font-size: clamp(1.8rem, 4vw, 2.6rem); font-weight: 900;
+      letter-spacing: -.03em; line-height: 1.15; margin-bottom: 14px;
+    }
+    .page-lead {
+      font-size: 1rem; color: var(--muted); line-height: 1.75;
+      margin-bottom: 52px; padding-bottom: 36px; border-bottom: 1px solid var(--border);
+    }
+    .page-lead a { color: var(--blue); }
+
+    /* ── Sections ── */
+    .guide-section { margin-bottom: 64px; }
+    .guide-section h2 {
+      font-size: 1.25rem; font-weight: 800; letter-spacing: -.02em;
+      margin-bottom: 18px; display: flex; align-items: center; gap: 12px;
+      padding-bottom: 14px; border-bottom: 1px solid var(--border);
+    }
+    .sec-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      border-radius: 8px; font-size: 0.85rem; font-weight: 900; color: #fff; flex-shrink: 0;
+    }
+    .guide-section h3 {
+      font-size: 1rem; font-weight: 700; color: var(--text); margin: 28px 0 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .guide-section h4 {
+      font-size: 0.88rem; font-weight: 700; color: var(--accent2);
+      margin: 20px 0 10px; font-family: var(--mono);
+    }
+    .guide-section p { font-size: 0.88rem; color: var(--muted); line-height: 1.78; margin-bottom: 14px; }
+    .guide-section strong { color: var(--text); font-weight: 700; }
+    .guide-section em { color: var(--accent2); font-style: italic; }
+    .guide-section ul, .guide-section ol { padding-left: 20px; margin-bottom: 14px; }
+    .guide-section li { font-size: 0.87rem; color: var(--muted); line-height: 1.75; margin-bottom: 6px; }
+    .guide-section li strong { color: var(--text); }
+    .guide-section hr { border: none; border-top: 1px solid var(--border); margin: 24px 0; }
+
+    /* ── Code ── */
+    .code-wrap { position: relative; margin: 16px 0; }
+    pre {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+      padding: 18px 20px; overflow-x: auto; font-family: var(--mono);
+      font-size: 0.82rem; line-height: 1.65; color: var(--text);
+    }
+    code {
+      font-family: var(--mono); font-size: 0.85em;
+      background: rgba(255,255,255,.07); padding: 1px 6px;
+      border-radius: 4px; color: var(--accent2);
+    }
+    pre code { background: transparent; padding: 0; font-size: inherit; color: inherit; }
+    .kw { color: var(--purple); }
+    .cm { color: var(--muted); font-style: italic; }
+    .st { color: var(--green); }
+    .nu { color: var(--blue); }
+    .ck { color: var(--blue); }
+    .cv { color: var(--green); }
+    .copy-btn {
+      position: absolute; top: 10px; right: 12px;
+      font-size: 0.7rem; font-family: var(--mono); color: var(--muted);
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 5px; padding: 3px 10px; cursor: pointer;
+      transition: color .2s, border-color .2s;
+    }
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ── Callouts ── */
+    .callout {
+      padding: 14px 18px; border-radius: 10px; font-size: 0.85rem;
+      line-height: 1.7; margin: 18px 0; display: flex; gap: 12px; align-items: flex-start;
+    }
+    .callout-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 1px; }
+    .callout > div > p { margin: 0; font-size: 0.85rem; color: inherit; }
+    .callout.warning { background: rgba(255,107,53,.08); border: 1px solid rgba(255,107,53,.25); color: var(--accent2); }
+    .callout.warning strong { color: var(--accent); }
+    .callout.info { background: rgba(96,165,250,.08); border: 1px solid rgba(96,165,250,.25); color: #93c5fd; }
+    .callout.info strong { color: var(--blue); }
+    .callout.tip { background: rgba(61,220,132,.08); border: 1px solid rgba(61,220,132,.25); color: #6ee7b7; }
+    .callout.tip strong { color: var(--green); }
+    .callout.purple { background: rgba(167,139,250,.08); border: 1px solid rgba(167,139,250,.25); color: #c4b5fd; }
+    .callout.purple strong { color: var(--purple); }
+
+    /* ── Agent table ── */
+    .table-wrap { overflow-x: auto; margin: 18px 0; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    thead th {
+      text-align: left; padding: 10px 14px; background: var(--surface);
+      color: var(--muted); font-weight: 600; font-size: 0.77rem;
+      letter-spacing: .04em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+    tbody td { padding: 11px 14px; border-bottom: 1px solid rgba(255,255,255,.04); color: var(--muted); vertical-align: top; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(255,255,255,.02); }
+    tbody td strong { color: var(--text); }
+    tbody td:first-child { color: var(--text); }
+
+    /* ── Steps ── */
+    .steps-list { list-style: none; padding: 0; counter-reset: step-counter; }
+    .steps-list li {
+      counter-increment: step-counter; display: flex;
+      gap: 16px; align-items: flex-start; margin-bottom: 14px;
+      font-size: 0.88rem; color: var(--muted);
+    }
+    .steps-list li::before {
+      content: counter(step-counter); min-width: 28px; height: 28px;
+      background: var(--surface); border: 1px solid var(--border); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--mono); font-size: 0.78rem; font-weight: 700;
+      color: var(--purple); flex-shrink: 0; margin-top: 2px;
+    }
+
+    /* ── Innovation cards ── */
+    .innov-grid { display: grid; gap: 16px; margin: 20px 0; }
+    .innov-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 22px;
+      transition: border-color .22s, transform .2s;
+    }
+    .innov-card:hover { border-color: var(--purple); transform: translateY(-2px); }
+    .innov-card .innov-num {
+      font-family: var(--mono); font-size: 0.7rem; color: var(--purple);
+      letter-spacing: .1em; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .innov-card h3 {
+      font-size: 1rem; font-weight: 800; color: var(--text);
+      margin: 0 0 10px; display: block;
+    }
+    .innov-card p { font-size: 0.85rem; color: var(--muted); line-height: 1.7; margin: 0; }
+    .innov-card ul { padding-left: 18px; margin: 8px 0 0; }
+    .innov-card li { font-size: 0.84rem; color: var(--muted); margin-bottom: 4px; }
+    .innov-card li strong { color: var(--text); }
+
+    /* ── Cost grid ── */
+    .cost-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; margin: 18px 0; }
+    .cost-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px;
+    }
+    .cost-card .cost-label { font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: .05em; }
+    .cost-card .cost-title { font-size: 0.95rem; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .cost-card .cost-price { font-family: var(--mono); font-size: 1.1rem; font-weight: 700; color: var(--green); margin-bottom: 8px; }
+    .cost-card .cost-price.paid { color: var(--accent2); }
+    .cost-card p { font-size: 0.81rem; color: var(--muted); margin: 0; line-height: 1.6; }
+    .cost-card .perf-bar {
+      height: 4px; background: var(--border); border-radius: 99px;
+      margin: 10px 0 6px; overflow: hidden;
+    }
+    .cost-card .perf-fill { height: 100%; border-radius: 99px; }
+    .cost-card .perf-label { font-size: 0.74rem; color: var(--muted); }
+
+    /* ── Agent config cards ── */
+    .agent-grid { display: grid; gap: 12px; margin: 16px 0; }
+    .agent-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 18px;
+      display: flex; gap: 16px; align-items: flex-start;
+    }
+    .agent-info { flex: 1; }
+    .agent-name { font-weight: 800; font-size: 0.93rem; color: var(--text); margin-bottom: 4px; }
+    .agent-role { font-size: 0.8rem; color: var(--muted); margin-bottom: 8px; }
+    .agent-models { display: flex; flex-wrap: wrap; gap: 6px; }
+    .model-badge {
+      font-family: var(--mono); font-size: 0.7rem; padding: 2px 9px;
+      border-radius: 99px; border: 1px solid;
+    }
+    .model-badge.best { color: var(--purple); background: rgba(167,139,250,.1); border-color: rgba(167,139,250,.3); }
+    .model-badge.good { color: var(--blue); background: rgba(96,165,250,.1); border-color: rgba(96,165,250,.3); }
+    .model-badge.free { color: var(--green); background: rgba(61,220,132,.08); border-color: rgba(61,220,132,.2); }
+
+    /* ── Case study cards ── */
+    .case-grid { display: grid; gap: 14px; margin: 18px 0; }
+    .case-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+    }
+    .case-card .case-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+    .case-card .case-icon { font-size: 1.5rem; }
+    .case-card .case-title { font-weight: 800; font-size: 0.95rem; color: var(--text); }
+    .case-card .case-meta { font-size: 0.78rem; color: var(--muted); }
+    .case-card p { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+    .case-card .case-result {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-family: var(--mono); font-size: 0.78rem; color: var(--green);
+      background: rgba(61,220,132,.08); border: 1px solid rgba(61,220,132,.2);
+      padding: 4px 12px; border-radius: 99px;
+    }
+
+    /* ── Prompt example ── */
+    .prompt-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--purple); border-radius: 0 10px 10px 0;
+      padding: 16px 18px; margin: 14px 0;
+      font-family: var(--mono); font-size: 0.82rem; color: var(--text);
+      line-height: 1.65; white-space: pre-wrap;
+    }
+    .prompt-label {
+      font-size: 0.7rem; color: var(--purple); letter-spacing: .08em;
+      text-transform: uppercase; margin-bottom: 8px; font-family: var(--mono);
+    }
+
+    /* ── Anti-pattern ── */
+    .compare-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+    .compare-bad { border-left: 3px solid rgba(239,68,68,.5); }
+    .compare-good { border-left: 3px solid rgba(61,220,132,.5); }
+    .compare-label-bad { color: #f87171; font-size: 0.74rem; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; font-family: var(--mono); }
+    .compare-label-good { color: var(--green); font-size: 0.74rem; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; font-family: var(--mono); }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border); padding: 32px 24px;
+      text-align: center; font-size: 0.8rem; color: var(--muted);
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: var(--text); }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .page-wrap { grid-template-columns: 1fr; padding: 36px 18px 80px; }
+      .toc { display: none; }
+      .nav-links { display: none; }
+      .compare-wrap { grid-template-columns: 1fr; }
+      .cost-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header>
+  <nav>
+    <a href="index.html" class="logo">
+      <div class="logo-mark">&lt;/&gt;</div>
+      Open Code
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html#opencode">OpenCode 소개</a></li>
+      <li><a href="guide.html">설치 가이드</a></li>
+      <li><a href="openrouter-guide.html">비용 최적화</a></li>
+      <li><a href="windows-file-location.html">Windows 파일 위치</a></li>
+    </ul>
+    <span class="nav-pill">oh-my-opencode</span>
+  </nav>
+</header>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="page-wrap">
+
+  <!-- TOC Sidebar -->
+  <aside class="toc">
+    <p class="toc-title">// 목차</p>
+    <ul class="toc-list">
+      <li><a href="#intro">소개 / 5가지 혁신</a></li>
+      <li><a href="#innov-1" class="toc-sub">└ 멀티 에이전트</a></li>
+      <li><a href="#innov-2" class="toc-sub">└ 설정 불필요</a></li>
+      <li><a href="#innov-3" class="toc-sub">└ 시니어 스타일</a></li>
+      <li><a href="#innov-4" class="toc-sub">└ LSP 활용</a></li>
+      <li><a href="#innov-5" class="toc-sub">└ 비용 구조</a></li>
+      <li><a href="#install">설치 및 설정 가이드</a></li>
+      <li><a href="#install-step1" class="toc-sub">└ Step 1: 설치</a></li>
+      <li><a href="#install-step2" class="toc-sub">└ Step 2: 인증</a></li>
+      <li><a href="#install-step3" class="toc-sub">└ Step 3: 확인</a></li>
+      <li><a href="#install-step4" class="toc-sub">└ Step 4: 첫 실행</a></li>
+      <li><a href="#cases">실전 사용 사례</a></li>
+      <li><a href="#prompts">프롬프트 작성 가이드</a></li>
+      <li><a href="#prompt-levels" class="toc-sub">└ 레벨별 전략</a></li>
+      <li><a href="#prompt-patterns" class="toc-sub">└ 고급 패턴</a></li>
+      <li><a href="#prompt-antipatterns" class="toc-sub">└ 안티패턴</a></li>
+      <li><a href="#cost">토큰 비용 비교</a></li>
+      <li><a href="#cost-strategy" class="toc-sub">└ 비용 최적화</a></li>
+      <li><a href="#agents">에이전트 모델 설정</a></li>
+      <li><a href="#agents-config" class="toc-sub">└ 구성 예시</a></li>
+      <li><a href="#auth-faq">LLM 서비스 등록 Q&amp;A</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <a href="index.html" class="back-btn">← 홈으로 돌아가기</a>
+
+    <p class="page-eyebrow">// oh-my-opencode 완전 가이드</p>
+    <h1 class="page-title">🎼 oh-my-opencode<br>AI 오케스트레이션의 세계</h1>
+    <p class="page-lead">
+      Claude, GPT, Gemini를 하나로 엮어 시니어 엔지니어의 워크플로우를 재현하는
+      <strong>멀티 에이전트 OpenCode 플러그인</strong>입니다.
+      개발자 YeonGyu Kim이 <strong>$24,000 상당의 토큰</strong>으로 검증한 오케스트레이션 시스템을 한 번의 설치로 그대로 가져다 씁니다.<br><br>
+      🔗 <a href="https://github.com/code-yeongyu/oh-my-opencode" target="_blank" rel="noopener">GitHub — oh-my-opencode ↗</a>
+      &nbsp;·&nbsp;
+      <a href="https://goddaehee.tistory.com/485" target="_blank" rel="noopener">설치 리뷰 (갓대희의 블로그) ↗</a>
+    </p>
+
+    <!-- ══ 소개 / 5가지 혁신 ══ -->
+    <section class="guide-section" id="intro">
+      <h2><span class="sec-badge">★</span> 5가지 혁신</h2>
+      <p>단순히 코드를 생성하는 수준을 넘어, 단일 모델의 한계를 병렬 에이전트 군단으로 뛰어넘는 다섯 가지 차별점입니다.</p>
+
+      <div class="innov-grid">
+
+        <!-- 1 -->
+        <div class="innov-card" id="innov-1">
+          <div class="innov-num">// 01 · 멀티 에이전트 오케스트레이션</div>
+          <h3>"적재적소" — 전문가 군단 투입</h3>
+          <p>Sisyphus가 전체 설계를 고민하는 동안, Librarian은 오픈소스 문서를 조사하고 Explore는 코드베이스를 탐색합니다. Claude Code 같은 순차적(Sequential) 도구와 달리 <strong>병렬 백그라운드 실행</strong>을 지원합니다.</p>
+          <div class="table-wrap" style="margin-top:14px;">
+            <table>
+              <thead><tr><th>에이전트</th><th>역할</th><th>기본 모델</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Sisyphus</strong></td><td>전체 지휘 및 태스크 관리</td><td>Claude Opus 4.5</td></tr>
+                <tr><td><strong>Oracle</strong></td><td>설계, 디버깅, 아키텍처 전략</td><td>GPT-5.2</td></tr>
+                <tr><td><strong>Frontend UI/UX</strong></td><td>UI/UX 구현 및 디자인 최적화</td><td>Gemini 3 Pro</td></tr>
+                <tr><td><strong>Librarian</strong></td><td>문서 및 OSS 조사</td><td>Claude Sonnet / Gemini Flash</td></tr>
+                <tr><td><strong>Document Writer</strong></td><td>기술 문서 및 가이드 작성</td><td>Gemini 3 Pro</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2 -->
+        <div class="innov-card" id="innov-2">
+          <div class="innov-num">// 02 · 즉시 사용 가능한 환경</div>
+          <h3>"설정이 필요 없는 최적해" — Ubuntu 같은 편의성</h3>
+          <p><strong>OpenCode v1.0.150 이상</strong>이 설치된 상태에서 명령 한 줄로 모든 에이전트 설정이 완료됩니다.</p>
+          <div class="code-wrap" style="margin-top:12px;">
+            <pre>bunx oh-my-opencode install</pre>
+            <button class="copy-btn" onclick="copyCode(this)">copy</button>
+          </div>
+          <p style="margin-top:8px;">"OpenCode가 Debian/Arch Linux라면, Oh My OpenCode는 Ubuntu/Omarchy입니다."<br>시니어 엔지니어의 시행착오가 녹아 있는 완성된 환경을 그대로 사용하는 가치는 무엇과도 바꿀 수 없습니다.</p>
+        </div>
+
+        <!-- 3 -->
+        <div class="innov-card" id="innov-3">
+          <div class="innov-num">// 03 · 코드 스타일</div>
+          <h3>"AI스럽지 않은 코드" — 시니어 개발자의 향기</h3>
+          <p>기존 AI는 장황하고 자명한 주석이 남발된 코드를 생성합니다. oh-my-opencode는 기존 코드베이스의 컨텍스트를 완벽히 이해하여 간결하고 명확한 코드를 지향합니다.</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+            <div>
+              <div class="compare-label-bad">❌ Verbose AI Style</div>
+              <pre style="font-size:0.75rem;padding:12px;"><span class="cm"># 유저 정보를 DB에서 페이지네이션과
+# 함께 가져오는 함수</span>
+<span class="kw">def</span> fetch_all_users_from_database_with_pagination(
+    page_number: <span class="nu">int</span>,
+    items_per_page: <span class="nu">int</span>
+) -> list[UserDataResponseObject]:
+    <span class="cm"># 데이터베이스에서 유저 데이터 가져옴</span>
+    fetched_user_data_list = db.execute(...)
+    <span class="cm"># 데이터 리스트를 반환함</span>
+    <span class="kw">return</span> fetched_user_data_list</pre>
+            </div>
+            <div>
+              <div class="compare-label-good">✅ Senior-like Style</div>
+              <pre style="font-size:0.75rem;padding:12px;"><span class="kw">def</span> <span class="st">get_users</span>(page: <span class="nu">int</span>, limit: <span class="nu">int</span>) -> list[User]:
+    <span class="kw">return</span> db.execute(
+        <span class="st">"SELECT * FROM users LIMIT :limit OFFSET :offset"</span>,
+        {<span class="st">"limit"</span>: limit, <span class="st">"offset"</span>: page * limit}
+    ).fetchall()</pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 -->
+        <div class="innov-card" id="innov-4">
+          <div class="innov-num">// 04 · LSP 통합</div>
+          <h3>"실수를 방지하는 눈" — LSP 툴의 강력함</h3>
+          <p>코드를 단순 텍스트가 아닌 <strong>추상 구문 트리(AST)</strong> 구조로 이해합니다. AI가 IDE와 동일한 눈을 가진 것과 같습니다.</p>
+          <ul style="margin-top:10px;">
+            <li><strong>구조적 리팩토링:</strong> <code>lsp_rename</code>으로 실제 심볼을 참조하는 지점만 정확히 수정합니다. grep 치환 시 발생하는 실수를 원천 봉쇄합니다.</li>
+            <li><strong>사전 에러 검출:</strong> <code>lsp_diagnostics</code>로 코드 작성 즉시 타입 불일치나 오타를 감지합니다.</li>
+          </ul>
+        </div>
+
+        <!-- 5 -->
+        <div class="innov-card" id="innov-5">
+          <div class="innov-num">// 05 · 비용 구조</div>
+          <h3>"API 시대를 위한 경제적 스택" — 기존 구독제의 재발견</h3>
+          <p>기존 구독(Claude Pro/Max, ChatGPT Plus)을 그대로 활용하여 추가 API 비용 없이 구동합니다.</p>
+          <div class="table-wrap" style="margin-top:12px;">
+            <table>
+              <thead><tr><th>도구</th><th>비용 구조</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Cursor</strong></td><td>월 $20 고정</td></tr>
+                <tr><td><strong>Claude Code (API)</strong></td><td>사용량에 따라 월 수백 달러+ 위험</td></tr>
+                <tr><td><strong>oh-my-opencode</strong></td><td>기존 구독 활용 — 추가 API 비용 없음</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p style="margin-top:10px;">Claude Max 사용자는 <strong>"max20" 모드</strong>로 성능 극대화, 구독이 없어도 <strong>GLM-4.7-free 모델</strong>로 무료 구동 가능합니다.</p>
+        </div>
+
+      </div>
+
+      <div class="callout purple" style="margin-top:24px;">
+        <span class="callout-icon">🎯</span>
+        <div><strong>결론 — Ultrawork 모드:</strong> 명령어 창에 <code>ultrawork</code> (또는 <code>ulw</code>)를 입력하면 병렬 에이전트들이 TODO 리스트를 관리하고, 문서를 탐색하며, 설계를 코드로 구현해 나갑니다. 복잡한 요구사항을 스스로 분해하는 '가상 개발팀'이 펼쳐집니다.</div>
+      </div>
+    </section>
+
+    <!-- ══ 설치 및 설정 가이드 ══ -->
+    <section class="guide-section" id="install">
+      <h2><span class="sec-badge">1</span> 설치 및 설정 가이드</h2>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ️</span>
+        <div><strong>사전 요건:</strong> OpenCode v1.0.150 이상이 설치되어 있어야 합니다.
+        <code>opencode --version</code>으로 확인하세요.</div>
+      </div>
+
+      <h3 id="install-step1">📋 사전 확인</h3>
+      <p>설치 전 아래 항목을 파악해 두세요. 대화형 설치 과정에서 묻습니다.</p>
+      <ul>
+        <li>Claude Pro/Max 구독 여부 (max20 모드 사용 여부 포함)</li>
+        <li>ChatGPT 구독 여부</li>
+        <li>Gemini 모델 사용 계획 여부</li>
+        <li>GitHub Copilot 구독 여부</li>
+      </ul>
+
+      <h3>📦 Step 1: 설치 실행</h3>
+      <p>터미널에서 다음 명령어 중 하나를 실행하세요.</p>
+      <div class="code-wrap">
+        <pre><span class="cm"># bun 사용</span>
+bunx oh-my-opencode install
+
+<span class="cm"># npm 사용</span>
+npx oh-my-opencode install</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+      <p>대화형 설치 프로그램이 실행되면 구독 정보를 입력합니다.</p>
+
+      <h3 id="install-step2">🔧 Step 2: 인증 설정</h3>
+
+      <h4>1️⃣ Claude 인증 (Claude Pro/Max 구독자)</h4>
+      <div class="code-wrap">
+        <pre>opencode auth login</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+      <ol class="steps-list">
+        <li>Provider 선택 → <strong>Anthropic</strong> 선택</li>
+        <li>Login method 선택 → <strong>Claude Pro/Max</strong> 선택</li>
+        <li>브라우저가 자동으로 열리면 로그인 진행</li>
+        <li>완료될 때까지 대기</li>
+      </ol>
+
+      <h4>2️⃣ Google Gemini 인증 (Antigravity — 무료)</h4>
+      <p><code>~/.config/opencode/opencode.json</code>에 먼저 플러그인을 추가합니다.</p>
+      <div class="code-wrap">
+        <pre>{
+  <span class="ck">"plugin"</span>: [
+    <span class="st">"oh-my-opencode"</span>,
+    <span class="st">"opencode-antigravity-auth@1.2.8"</span>
+  ]
+}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+      <p>그 다음 <code>opencode auth login</code> 실행 → Provider: <strong>Google</strong> → <strong>OAuth with Google (Antigravity)</strong> 선택</p>
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <div><strong>팁:</strong> 최대 10개의 Google 계정을 추가하여 rate limit을 분산할 수 있습니다!</div>
+      </div>
+
+      <h4>3️⃣ GitHub Copilot 인증</h4>
+      <div class="code-wrap">
+        <pre>opencode auth login
+<span class="cm"># Provider: GitHub → OAuth 인증 완료</span></pre>
+      </div>
+
+      <h3 id="install-step3">✅ Step 3: 설치 확인</h3>
+      <div class="code-wrap">
+        <pre><span class="cm"># OpenCode 버전 확인 (1.0.150 이상)</span>
+opencode --version
+
+<span class="cm"># oh-my-opencode 등록 확인</span>
+cat ~/.config/opencode/opencode.json</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+      <p><code>plugin</code> 배열에 <code>"oh-my-opencode"</code>가 포함되어 있으면 성공입니다.</p>
+
+      <h3 id="install-step4">🎯 Step 4: 첫 실행</h3>
+      <div class="code-wrap">
+        <pre><span class="cm"># 프로젝트 디렉토리로 이동 후</span>
+opencode</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+
+      <h3>💡 기본 사용법</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>상황</th><th>방법</th></tr></thead>
+          <tbody>
+            <tr><td>간단한 작업</td><td>평범하게 프롬프트 입력</td></tr>
+            <tr><td>복잡한 작업</td><td><code>ulw</code> 또는 <code>ultrawork</code> 키워드 추가</td></tr>
+            <tr><td>정밀한 작업 계획</td><td><kbd>Tab</kbd> 누르기 → Prometheus(Planner) 모드 진입 → <code>/start-work</code>로 실행</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>⚙️ 추가 설정 (선택사항)</h3>
+      <div class="code-wrap">
+        <pre><span class="cm"># 프로젝트별 설정</span>
+.opencode/oh-my-opencode.json
+
+<span class="cm"># 전역 설정</span>
+~/.config/opencode/oh-my-opencode.json</pre>
+      </div>
+      <div class="code-wrap">
+        <pre><span class="cm">// 에이전트 모델 변경 예시</span>
+{
+  <span class="ck">"agents"</span>: {
+    <span class="ck">"sisyphus"</span>: { <span class="ck">"model"</span>: <span class="st">"anthropic/claude-opus-4.5"</span> },
+    <span class="ck">"oracle"</span>:   { <span class="ck">"model"</span>: <span class="st">"openai/gpt-5.2"</span> }
+  }
+}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+
+      <div class="callout warning">
+        <span class="callout-icon">⚠️</span>
+        <div>
+          <strong>중요 사항</strong><br>
+          1. Sisyphus 에이전트는 <strong>Claude Opus 4.5를 강력히 권장</strong>합니다. 다른 모델 사용 시 성능이 크게 저하될 수 있습니다.<br>
+          2. 明시적으로 필요한 경우가 아니라면 <strong>기본 설정을 변경하지 마세요</strong>.
+        </div>
+      </div>
+
+      <h3>🐛 문제 해결</h3>
+      <div class="code-wrap">
+        <pre><span class="cm"># OpenCode 버전 부족 시 업데이트</span>
+curl -fsSL https://opencode.ai/install | bash
+
+<span class="cm"># 인증 오류 시 재인증</span>
+rm -rf ~/.config/opencode/auth
+opencode auth login
+
+<span class="cm"># 플러그인 재설치</span>
+bunx oh-my-opencode install</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+    </section>
+
+    <!-- ══ 실전 사용 사례 ══ -->
+    <section class="guide-section" id="cases">
+      <h2><span class="sec-badge">2</span> 실전 사용 사례</h2>
+
+      <div class="case-grid">
+        <div class="case-card">
+          <div class="case-header">
+            <span class="case-icon">📄</span>
+            <div>
+              <div class="case-title">PDF Merge 기능 구축</div>
+              <div class="case-meta">Laurent Meyer · SaferPDF.com</div>
+            </div>
+          </div>
+          <p>Hugo 정적 사이트 + React SPA 하이브리드 구조에서 PDF Merge 기능을 추가. Vite 설정, Hugo 템플릿, 빌드 스크립트를 모두 자동 연결 및 기능 브랜치 관리까지 완벽 처리.</p>
+          <div class="prompt-label">프롬프트</div>
+          <div class="prompt-box">"Create a PDF Merge feature as a separate page, respecting the existing build pipeline."</div>
+          <span class="case-result">⏱ 90분 완성 (수동 시 6-8시간) · 500k 토큰 소비</span>
+        </div>
+
+        <div class="case-card">
+          <div class="case-header">
+            <span class="case-icon">🔧</span>
+            <div>
+              <div class="case-title">8,000개의 ESLint 경고 수정</div>
+              <div class="case-meta">Jacob Ferrari</div>
+            </div>
+          </div>
+          <div class="prompt-label">프롬프트</div>
+          <div class="prompt-box">"Fix all 8000 eslint warnings in this codebase"</div>
+          <span class="case-result">✅ 하루 만에 8,000개 경고 전부 해결</span>
+        </div>
+
+        <div class="case-card">
+          <div class="case-header">
+            <span class="case-icon">🚀</span>
+            <div>
+              <div class="case-title">45,000라인 Tauri 앱 → SaaS 웹앱 전환</div>
+              <div class="case-meta">James Hargis</div>
+            </div>
+          </div>
+          <div class="prompt-label">프롬프트</div>
+          <div class="prompt-box">"Convert this 45k line tauri app into a SaaS web app.
+Start with interview me prompt, ask for ratings and recommendations."</div>
+          <span class="case-result">✅ 밤새 자동 작업 → 아침에 거의 완전 동작하는 웹사이트</span>
+        </div>
+
+        <div class="case-card">
+          <div class="case-header">
+            <span class="case-icon">💬</span>
+            <div>
+              <div class="case-title">멀티 에이전트 협업 — 실시간 채팅 기능</div>
+              <div class="case-meta">시나리오 예시</div>
+            </div>
+          </div>
+          <div class="prompt-label">프롬프트</div>
+          <div class="prompt-box">ulw - Create a real-time chat feature with WebSocket,
+message history, file uploads, and responsive UI</div>
+          <p style="margin-top:12px;"><strong>백그라운드 동작:</strong> Sisyphus(조율) → Librarian(WebSocket 문서 검색) → Explore(코드베이스 탐색) → Frontend Engineer(React UI 개발) → Oracle(복잡한 로직 디버깅) — 모두 <strong>병렬 실행</strong></p>
+        </div>
+
+        <div class="case-card">
+          <div class="case-header">
+            <span class="case-icon">🎮</span>
+            <div>
+              <div class="case-title">점심 산책 중 애니메이션 구현</div>
+              <div class="case-meta">MagiMetal · 마인크래프트/소울라이크 게임</div>
+            </div>
+          </div>
+          <div class="prompt-label">프롬프트</div>
+          <div class="prompt-box">"Add crouch animations to the player character"</div>
+          <span class="case-result">✅ 점심 산책 나간 사이 자동으로 구현 완료</span>
+        </div>
+      </div>
+
+      <h3>Todo 자동 완성 (Ralph Loop)</h3>
+      <p>코드에 TODO 주석이 있으면 Todo Enforcer가 자동 감지하여, 모든 TODO가 완료될 때까지 자동으로 계속 작업합니다.</p>
+      <div class="code-wrap">
+        <pre><span class="cm"># TODO: Implement user authentication</span>
+<span class="cm"># TODO: Add error handling</span>
+<span class="cm"># TODO: Write unit tests</span>
+<span class="cm">→ Todo Enforcer가 자동으로 추적하고 완료까지 계속 실행</span></pre>
+      </div>
+    </section>
+
+    <!-- ══ 프롬프트 작성 가이드 ══ -->
+    <section class="guide-section" id="prompts">
+      <h2><span class="sec-badge">3</span> 실전 프롬프트 작성 가이드</h2>
+
+      <h3 id="prompt-levels">🚀 레벨별 전략</h3>
+
+      <h4>⚡ Level 1: 빠른 수정 / 단순 작업</h4>
+      <p>구체적인 파일·함수명 언급, 단일 목표, 10-30분 내 완료 작업.</p>
+      <div class="prompt-box">"Fix the memory leak in the WebSocket connection handler"
+"Refactor the user service to use dependency injection"
+"Add pagination to the products API endpoint"</div>
+
+      <h4>🔧 Level 2: 중급 기능 개발</h4>
+      <p>요구사항을 구조화하여 나열하고 기존 시스템 참조를 명시합니다.</p>
+      <div class="prompt-box">"Create a user profile page with:
+- Profile picture upload with image optimization
+- Bio editor with markdown support
+- Social links section
+- Privacy settings toggle
+Use existing auth system and follow current design patterns"</div>
+
+      <h4>💪 Level 3: 대규모 프로젝트 — <code>ulw</code> 필수</h4>
+      <p>아키텍처, 성능 요구사항, 구현 가이드라인, 테스트 요구사항을 모두 명시합니다.</p>
+      <div class="prompt-box">ulw - Implement real-time collaboration features:
+
+Architecture:
+- WebSocket server with Redis pub/sub
+- Operational transformation for concurrent editing
+- Presence system showing active users
+
+Requirements:
+- Support 100+ concurrent users per document
+- Sub-100ms latency for updates
+- Graceful degradation on connection loss
+
+Implementation:
+- Use existing PostgreSQL for persistence
+- Follow current microservices pattern
+- Add comprehensive error handling
+- Include unit and integration tests</div>
+
+      <h3 id="prompt-patterns">🎨 고급 프롬프트 패턴</h3>
+
+      <h4>패턴 1: Prometheus Planner 활용</h4>
+      <p><kbd>Tab</kbd> 키로 Planner 모드 진입 후 계획을 수립하고 <code>/start-work</code>로 실행합니다.</p>
+      <div class="prompt-box">I need to migrate our monolithic app to microservices.
+
+Start by:
+1. Analyzing current architecture and dependencies
+2. Identifying service boundaries
+3. Proposing migration strategy with risks
+
+Interview me about:
+- Which services should be prioritized?
+- What's our deployment timeline?
+
+<span style="color: var(--green);">/start-work</span>  ← 계획 검토 후 이 명령으로 실행 시작</div>
+
+      <h4>패턴 2: 명시적 연구 요청</h4>
+      <div class="prompt-box">Before implementing, please:
+
+1. Research:
+   - Check official React Server Components docs
+   - Find 3-5 real-world implementations on GitHub
+   - Review our existing server components pattern
+
+2. Design:
+   - Propose component architecture
+   - Show me the plan before coding
+
+3. Implement:
+   - Follow our established patterns
+   - Add comprehensive error boundaries</div>
+
+      <h3 id="prompt-antipatterns">⚠️ 안티패턴 vs 좋은 패턴</h3>
+      <div class="compare-wrap">
+        <div>
+          <div class="compare-label-bad">❌ 나쁜 예 — 모호한 지시</div>
+          <div class="prompt-box compare-bad">"Make the app better"
+"Fix all the bugs"
+"Improve performance"</div>
+        </div>
+        <div>
+          <div class="compare-label-good">✅ 좋은 예 — 구체적 목표</div>
+          <div class="prompt-box compare-good">"Reduce API response time from 2s to &lt;500ms by:
+- Adding Redis caching for product data
+- Optimizing DB queries with indexes
+- Implementing query result pagination"</div>
+        </div>
+      </div>
+      <div class="compare-wrap">
+        <div>
+          <div class="compare-label-bad">❌ 너무 많은 작업을 한 번에</div>
+          <div class="prompt-box compare-bad">"Build the entire app with auth, payments,
+admin panel, analytics, notifications,
+and mobile app"</div>
+        </div>
+        <div>
+          <div class="compare-label-good">✅ 단계별 세션 분할</div>
+          <div class="prompt-box compare-good">Session 1: "ulw - Set up authentication with JWT"
+Session 2: "ulw - Integrate Stripe payment"
+Session 3: "ulw - Build admin dashboard"</div>
+        </div>
+      </div>
+
+      <h3>🎓 프롬프트 체크리스트</h3>
+      <ul>
+        <li>목표가 명확한가? (무엇을 만들지/수정할지)</li>
+        <li>범위가 정의되었는가? (어디까지 작업할지)</li>
+        <li>컨텍스트를 제공했는가? (기존 코드/패턴 참조)</li>
+        <li>제약사항을 명시했는가? (성능/보안 요구사항)</li>
+        <li>복잡도가 높은가? → <code>ulw</code> 키워드 사용</li>
+        <li>계획이 필요한가? → <kbd>Tab</kbd>으로 Planner 모드</li>
+        <li>연구가 필요한가? → 명시적으로 요청</li>
+      </ul>
+
+      <h3>🔥 실전 팁</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>팁</th><th>방법</th></tr></thead>
+          <tbody>
+            <tr><td><strong>세션 관리</strong></td><td>컨텍스트 창 40% 이상 → 새 세션 시작. 관련 문서는 <code>docs/</code> 폴더 정리</td></tr>
+            <tr><td><strong>Todo 활용</strong></td><td>"TODO comments for edge cases / optimizations / tests" → Todo Enforcer가 자동 추적</td></tr>
+            <tr><td><strong>점진적 개선</strong></td><td>Session 1: MVP → Session 2: 에러 처리 → Session 3: 성능 → Session 4: 테스트</td></tr>
+            <tr><td><strong>LSP 명시</strong></td><td>"Use LSP tools to find all usages / rename safely / get type definitions"</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>📚 추가 자료</h3>
+      <ul>
+        <li><a href="https://github.com/code-yeongyu/oh-my-opencode/blob/dev/docs/ultrawork-manifesto.md" target="_blank" rel="noopener">Ultrawork Manifesto ↗</a> — 철학과 원칙</li>
+        <li><a href="https://github.com/code-yeongyu/oh-my-opencode/blob/dev/docs/features.md" target="_blank" rel="noopener">Features Documentation ↗</a> — 전체 기능 목록</li>
+        <li>Reddit 커뮤니티: r/ClaudeCode, r/opencodeCLI</li>
+      </ul>
+    </section>
+
+    <!-- ══ 토큰 비용 비교 ══ -->
+    <section class="guide-section" id="cost">
+      <h2><span class="sec-badge">4</span> 토큰 소비 비교 및 비용 최적화</h2>
+
+      <h3>📊 실제 벤치마크 (Matthieu Napoli, 2026년 1월)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>항목</th><th>Claude Code</th><th>OpenCode (기본)</th></tr></thead>
+          <tbody>
+            <tr><td><strong>소요 시간</strong></td><td>14분</td><td>27분</td></tr>
+            <tr><td><strong>토큰 사용</strong></td><td>~191,000</td><td>~278,000</td></tr>
+            <tr><td><strong>비용</strong></td><td>기준</td><td>+45% 더 비쌈</td></tr>
+            <tr><td><strong>코드 품질</strong></td><td>약간 더 좋음</td><td>비슷</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p><em>단순 작업에서 Claude Code가 2배 빠르고 30% 저렴합니다. oh-my-opencode는 복잡한 대규모 작업에 진가를 발휘합니다.</em></p>
+
+      <h3>🔥 oh-my-opencode 토큰 대량 소비 이유</h3>
+      <ul>
+        <li><strong>멀티 에이전트:</strong> 각 에이전트가 독립적으로 컨텍스트 소비</li>
+        <li><strong>병렬 백그라운드 작업:</strong> 각 작업마다 별도 API 호출 후 결과 통합 시 추가 토큰</li>
+        <li><strong>긴 시스템 프롬프트:</strong> 상세한 에이전트 지시사항이 매 호출마다 전송</li>
+      </ul>
+
+      <div class="callout info">
+        <span class="callout-icon">💬</span>
+        <div><strong>Reddit r/opencodeCLI 사용자 의견</strong><br>
+        "2-3개 작업만 해도 4시간 제한 소진" · "30% 주간 할당량을 첫 테스트에서 소진"<br>
+        <em>but</em> "복잡한 작업에는 가치 있음 — 10파운드 해머처럼, 모든 못에 꺼낼 필요는 없음"</div>
+      </div>
+
+      <h3 id="cost-strategy">💰 비용 효율적인 사용 전략</h3>
+
+      <h4>전략 1: 작업 유형별 도구 선택</h4>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Claude Code 사용 (저렴)</th><th>oh-my-opencode 사용 (비싸지만 가치 있음)</th></tr></thead>
+          <tbody>
+            <tr><td>버그 수정, 리팩토링, 코드 리뷰, 단일 파일 수정</td><td>대규모 아키텍처 설계, 여러 파일 동시 수정, 광범위한 리서치, 장시간 무인 작업</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h4>전략 2: 불필요한 에이전트 비활성화</h4>
+      <div class="code-wrap">
+        <pre>{
+  <span class="ck">"agents"</span>: {
+    <span class="ck">"librarian"</span>: { <span class="ck">"disabled"</span>: <span class="kw">true</span> },
+    <span class="ck">"explore"</span>:   { <span class="ck">"disabled"</span>: <span class="kw">true</span> }
+  }
+}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+
+      <h4>전략 3: OmO 자체 비활성화 (단순 작업)</h4>
+      <div class="code-wrap">
+        <pre>{
+  <span class="ck">"omo_agent"</span>: { <span class="ck">"disabled"</span>: <span class="kw">true</span> }
+}
+<span class="cm">// 바닐라 OpenCode로 복귀 → 토큰 소비 50%+ 감소</span></pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+
+      <h4>전략 4: 무료·저렴 모델 활용</h4>
+      <div class="code-wrap">
+        <pre>{
+  <span class="ck">"agents"</span>: {
+    <span class="ck">"sisyphus"</span>:              { <span class="ck">"model"</span>: <span class="st">"anthropic/claude-opus-4.5"</span> },  <span class="cm">// 메인만 유료</span>
+    <span class="ck">"oracle"</span>:                { <span class="ck">"model"</span>: <span class="st">"google/antigravity-gemini-3-pro-high"</span> },
+    <span class="ck">"frontend-ui-ux-engineer"</span>:{ <span class="ck">"model"</span>: <span class="st">"google/antigravity-gemini-3-flash"</span> },
+    <span class="ck">"librarian"</span>:             { <span class="ck">"model"</span>: <span class="st">"glm-4.7-free"</span> },
+    <span class="ck">"explore"</span>:               { <span class="ck">"model"</span>: <span class="st">"grok-fast"</span> }
+  }
+}
+<span class="cm">// Claude 구독만 필요, 나머지 무료!</span></pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+    </section>
+
+    <!-- ══ 에이전트 모델 설정 ══ -->
+    <section class="guide-section" id="agents">
+      <h2><span class="sec-badge">5</span> 에이전트별 모델 설정 요구사항</h2>
+      <p>각 에이전트별로 추천 구독이 <strong>꼭 필요하지는 않습니다</strong>. 하지만 최적의 경험을 위해 아래를 참고하세요.</p>
+
+      <div class="agent-grid">
+        <div class="agent-card">
+          <div class="agent-info">
+            <div class="agent-name">🔑 Sisyphus (메인 오케스트레이터)</div>
+            <div class="agent-role">전체 조율 — 가장 강력한 추론 능력 필요</div>
+            <div class="agent-models">
+              <span class="model-badge best">Claude Opus 4.5 (강력 권장)</span>
+              <span class="model-badge good">Claude Max20 Opus</span>
+              <span class="model-badge free">Gemini 3 Pro (Antigravity · 무료)</span>
+            </div>
+          </div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-info">
+            <div class="agent-name">🧠 Oracle (디버깅 / 아키텍처)</div>
+            <div class="agent-role">복잡한 로직 분석 및 설계</div>
+            <div class="agent-models">
+              <span class="model-badge best">GPT 5.2</span>
+              <span class="model-badge good">Gemini 3 Pro</span>
+              <span class="model-badge free">GLM 4.7 Free</span>
+            </div>
+          </div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-info">
+            <div class="agent-name">🎨 Frontend UI/UX Engineer</div>
+            <div class="agent-role">UI 컴포넌트 개발 — 무료 모델로도 충분</div>
+            <div class="agent-models">
+              <span class="model-badge best">Gemini 3 Pro</span>
+              <span class="model-badge free">Gemini 3 Flash (Antigravity · 무료)</span>
+            </div>
+          </div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-info">
+            <div class="agent-name">📚 Librarian (문서 검색)</div>
+            <div class="agent-role">OSS 문서 및 코드 조사 — 덜 복잡한 작업</div>
+            <div class="agent-models">
+              <span class="model-badge good">Claude Sonnet 4.5</span>
+              <span class="model-badge free">GLM 4.7 Free</span>
+              <span class="model-badge free">Gemini 3 Flash (무료)</span>
+            </div>
+          </div>
+        </div>
+        <div class="agent-card">
+          <div class="agent-info">
+            <div class="agent-name">🔍 Explore (빠른 탐색)</div>
+            <div class="agent-role">빠른 코드베이스 grep — 간단한 작업</div>
+            <div class="agent-models">
+              <span class="model-badge free">Grok Fast (무료 · 기간 제한)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <h3 id="agents-config">📦 구성 예시 (예산별)</h3>
+
+      <div class="cost-grid">
+        <div class="cost-card">
+          <div class="cost-label">무료</div>
+          <div class="cost-title">완전 무료 구성</div>
+          <div class="cost-price">$0 / 월</div>
+          <div class="perf-bar"><div class="perf-fill" style="width:70%;background:var(--green);"></div></div>
+          <div class="perf-label">성능: ~70% (vs Opus 기준)</div>
+          <p>Sisyphus·Oracle: Gemini 3 Pro (Antigravity)<br>Frontend: Gemini 3 Flash<br>Librarian: GLM 4.7 Free<br>Explore: Grok Fast</p>
+        </div>
+        <div class="cost-card">
+          <div class="cost-label">저예산</div>
+          <div class="cost-title">Claude Pro만</div>
+          <div class="cost-price paid">$20 / 월</div>
+          <div class="perf-bar"><div class="perf-fill" style="width:85%;background:var(--blue);"></div></div>
+          <div class="perf-label">성능: ~85%</div>
+          <p>Sisyphus·Librarian: Claude Opus/Sonnet<br>Oracle·Frontend: Gemini (Antigravity 무료)<br>Explore: Grok Fast (무료)</p>
+        </div>
+        <div class="cost-card">
+          <div class="cost-label">중간 예산</div>
+          <div class="cost-title">Claude + ChatGPT</div>
+          <div class="cost-price paid">$40 / 월</div>
+          <div class="perf-bar"><div class="perf-fill" style="width:95%;background:var(--accent2);"></div></div>
+          <div class="perf-label">성능: ~95%</div>
+          <p>Sisyphus·Librarian: Claude Opus/Sonnet<br>Oracle: GPT 5.2<br>Frontend: Gemini (무료)<br>Explore: Grok Fast (무료)</p>
+        </div>
+        <div class="cost-card">
+          <div class="cost-label">프리미엄</div>
+          <div class="cost-title">Claude Max20</div>
+          <div class="cost-price paid">$100 / 월</div>
+          <div class="perf-bar"><div class="perf-fill" style="width:100%;background:var(--purple);"></div></div>
+          <div class="perf-label">성능: 100%</div>
+          <p>Sisyphus: Claude Opus 4.5 Max20<br>Oracle: GPT 5.2<br>Frontend: Gemini 3 Pro<br>Explore: Grok Fast</p>
+        </div>
+      </div>
+
+      <h3>완전 무료 설정 파일 예시</h3>
+      <div class="code-wrap">
+        <pre>{
+  <span class="ck">"agents"</span>: {
+    <span class="ck">"sisyphus"</span>:              { <span class="ck">"model"</span>: <span class="st">"google/antigravity-gemini-3-pro-high"</span> },
+    <span class="ck">"oracle"</span>:                { <span class="ck">"model"</span>: <span class="st">"google/antigravity-gemini-3-pro-high"</span> },
+    <span class="ck">"frontend-ui-ux-engineer"</span>:{ <span class="ck">"model"</span>: <span class="st">"google/antigravity-gemini-3-flash"</span> },
+    <span class="ck">"librarian"</span>:             { <span class="ck">"model"</span>: <span class="st">"glm-4.7-free"</span> },
+    <span class="ck">"explore"</span>:               { <span class="ck">"model"</span>: <span class="st">"grok-fast"</span> }
+  }
+}</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+    </section>
+
+    <!-- ══ LLM 서비스 등록 Q&A ══ -->
+    <section class="guide-section" id="auth-faq">
+      <h2><span class="sec-badge">6</span> LLM 서비스 등록 Q&amp;A</h2>
+
+      <h3>❓ OpenCode에 이미 등록했는데 oh-my-opencode에서 또 해야 하나?</h3>
+      <div class="callout tip">
+        <span class="callout-icon">✅</span>
+        <div><strong>아니요, 별도 등록 불필요합니다.</strong> oh-my-opencode는 플러그인이므로 OpenCode의 기존 인증 정보를 자동으로 사용합니다.</div>
+      </div>
+      <div class="code-wrap">
+        <pre><span class="cm"># 현재 인증 목록 확인</span>
+opencode auth list</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+
+      <h3>❓ Gemini Antigravity를 새로 추가한다면?</h3>
+      <ol class="steps-list">
+        <li><strong>플러그인 등록</strong>: <code>opencode.json</code>에 <code>"opencode-antigravity-auth@1.2.8"</code> 추가</li>
+        <li><strong>인증</strong>: <code>opencode auth login</code> → Google → OAuth (Antigravity) 선택</li>
+        <li><strong>모델 지정</strong>: <code>oh-my-opencode.json</code>에서 해당 에이전트 모델을 <code>google/antigravity-gemini-3-pro-high</code>로 설정</li>
+      </ol>
+
+      <h3>❓ 무료로 사용 가능한가?</h3>
+      <div class="callout tip">
+        <span class="callout-icon">💚</span>
+        <div>
+          <strong>가능합니다!</strong><br>
+          · <strong>Antigravity (Gemini)</strong> — 완전 무료, Google 계정만 필요<br>
+          · <strong>GLM 4.7</strong> — 현재 무료 (기간 제한)<br>
+          · <strong>Grok Fast</strong> — 현재 무료 (기간 제한)<br>
+          성능은 낮지만 학습·테스트용으로 충분합니다!
+        </div>
+      </div>
+
+      <h3>❓ GitHub Copilot만 있는 경우?</h3>
+      <div class="code-wrap">
+        <pre>bunx oh-my-opencode install --no-tui --copilot=yes</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+      <p>Copilot 구독으로 Claude Opus 4.5, GPT-5.2 등 여러 프리미엄 모델을 프록시로 접근할 수 있습니다.</p>
+
+      <hr>
+      <h3>📌 참고 링크</h3>
+      <ul>
+        <li><a href="https://github.com/code-yeongyu/oh-my-opencode" target="_blank" rel="noopener">GitHub — code-yeongyu/oh-my-opencode ↗</a></li>
+        <li><a href="https://goddaehee.tistory.com/485" target="_blank" rel="noopener">Open Code 리뷰(2): oh-my-opencode 설치 및 설정 방법 (갓대희의 블로그) ↗</a></li>
+        <li><a href="https://zenn.dev/yuzora_yu/articles/oh-my-opencode-for-low-cost" target="_blank" rel="noopener">(일어) oh-my-opencode로 구축하는 저비용 AI 에이전트 운용술 — Zenn ↗</a></li>
+        <li><a href="https://github.com/code-yeongyu/oh-my-opencode/blob/dev/docs/ultrawork-manifesto.md" target="_blank" rel="noopener">Ultrawork Manifesto ↗</a></li>
+        <li><a href="https://github.com/code-yeongyu/oh-my-opencode/blob/dev/docs/features.md" target="_blank" rel="noopener">Features Documentation ↗</a></li>
+      </ul>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <p style="margin-bottom:8px;">
+    <a href="index.html">홈</a> ·
+    <a href="guide.html">설치 가이드</a> ·
+    <a href="openrouter-guide.html">비용 최적화</a> ·
+    <a href="windows-file-location.html">Windows 파일 위치</a>
+  </p>
+  <p>Open Code — 바이브 코딩을 위한 오픈 기술</p>
+</footer>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.closest('.code-wrap').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'copied!';
+      setTimeout(() => btn.textContent = 'copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
