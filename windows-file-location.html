@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Windows 11 파일 위치 가이드 — Open Code</title>
+
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23FF6B35'/%3E%3Crect x='10' y='14' width='44' height='38' rx='6' fill='%23FF8C5A'/%3E%3Crect x='29' y='6' width='6' height='10' rx='3' fill='white'/%3E%3Ccircle cx='32' cy='5' r='5' fill='white'/%3E%3Crect x='14' y='20' width='12' height='10' rx='3' fill='%230a0a0f'/%3E%3Crect x='38' y='20' width='12' height='10' rx='3' fill='%230a0a0f'/%3E%3Ccircle cx='20' cy='25' r='4' fill='%2360a5fa'/%3E%3Ccircle cx='44' cy='25' r='4' fill='%2360a5fa'/%3E%3Crect x='14' y='36' width='36' height='10' rx='3' fill='%230a0a0f'/%3E%3Crect x='21' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3Crect x='31' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3Crect x='41' y='36' width='2' height='10' fill='%23FF8C5A'/%3E%3C/svg%3E" />
+
+  <style>
+    /* ── Reset ─────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0a0a0f;
+      --surface:  #111118;
+      --card:     #17171f;
+      --border:   #27273a;
+      --accent:   #ff6b35;
+      --accent2:  #ff9a6c;
+      --green:    #3ddc84;
+      --blue:     #60a5fa;
+      --purple:   #a78bfa;
+      --text:     #f0f0f8;
+      --muted:    #7070a0;
+      --radius:   13px;
+      --font:     -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --mono:     'Fira Code', 'Cascadia Code', 'SFMono-Regular', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    a { color: var(--blue); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    /* ── Header ─────────────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10, 10, 15, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: var(--text);
+      letter-spacing: -.01em;
+      text-decoration: none !important;
+    }
+    .logo:hover { text-decoration: none !important; }
+
+    .logo-mark {
+      width: 32px; height: 32px;
+      background: var(--accent);
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      font-family: var(--mono);
+      font-size: 1rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 26px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--muted);
+      font-size: 0.875rem;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--text); text-decoration: none; }
+
+    .nav-pill {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      background: rgba(96, 165, 250, .15);
+      color: var(--blue);
+      border: 1px solid rgba(96, 165, 250, .35);
+      padding: 4px 12px;
+      border-radius: 99px;
+    }
+
+    /* ── Layout ─────────────────────────────── */
+    .page-wrap {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 64px 24px 100px;
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 48px;
+      align-items: start;
+    }
+
+    /* ── Sidebar TOC ─────────────────────────── */
+    .toc {
+      position: sticky;
+      top: 84px;
+    }
+
+    .toc-title {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: var(--accent);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .toc-list {
+      list-style: none;
+      border-left: 2px solid var(--border);
+      padding-left: 16px;
+    }
+
+    .toc-list li { margin-bottom: 2px; }
+
+    .toc-list a {
+      color: var(--muted);
+      font-size: 0.82rem;
+      display: block;
+      padding: 5px 0;
+      transition: color .2s;
+      line-height: 1.4;
+    }
+    .toc-list a:hover { color: var(--text); text-decoration: none; }
+    .toc-list .toc-sub {
+      padding-left: 12px;
+      font-size: 0.77rem;
+    }
+
+    /* ── Main Content ─────────────────────────── */
+    .content { min-width: 0; }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 5px 12px;
+      margin-bottom: 32px;
+      transition: color .2s, border-color .2s;
+    }
+    .back-btn:hover {
+      color: var(--text);
+      border-color: var(--accent);
+      text-decoration: none;
+    }
+
+    .page-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      color: var(--accent);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .page-title {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 900;
+      letter-spacing: -.03em;
+      line-height: 1.15;
+      margin-bottom: 14px;
+    }
+
+    .page-lead {
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 52px;
+      padding-bottom: 36px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Section titles ─────────────────────────── */
+    .guide-section { margin-bottom: 64px; }
+
+    .guide-section h2 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      letter-spacing: -.02em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sec-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 30px;
+      height: 30px;
+      background: linear-gradient(135deg, var(--blue), var(--purple));
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 900;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .guide-section h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 28px 0 12px;
+    }
+
+    .guide-section p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.78;
+      margin-bottom: 14px;
+    }
+
+    .guide-section strong { color: var(--text); font-weight: 700; }
+
+    .guide-section ul, .guide-section ol {
+      padding-left: 20px;
+      margin-bottom: 14px;
+    }
+    .guide-section li {
+      font-size: 0.87rem;
+      color: var(--muted);
+      line-height: 1.75;
+      margin-bottom: 6px;
+    }
+    .guide-section li strong { color: var(--text); }
+
+    /* ── Code blocks ─────────────────────────── */
+    .code-wrap {
+      position: relative;
+      margin: 16px 0;
+    }
+
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 18px 20px;
+      overflow-x: auto;
+      font-family: var(--mono);
+      font-size: 0.83rem;
+      line-height: 1.65;
+      color: var(--text);
+    }
+
+    code {
+      font-family: var(--mono);
+      font-size: 0.85em;
+      background: rgba(255,255,255,.07);
+      padding: 1px 6px;
+      border-radius: 4px;
+      color: var(--accent2);
+    }
+
+    pre code {
+      background: transparent;
+      padding: 0;
+      font-size: inherit;
+      color: inherit;
+      border-radius: 0;
+    }
+
+    .kw  { color: var(--purple); }
+    .cm  { color: var(--muted); font-style: italic; }
+    .st  { color: var(--green); }
+    .nu  { color: var(--blue); }
+    .op  { color: var(--accent2); }
+    .ck  { color: var(--blue); }
+    .cv  { color: var(--green); }
+
+    .copy-btn {
+      position: absolute;
+      top: 10px; right: 12px;
+      font-size: 0.7rem;
+      font-family: var(--mono);
+      color: var(--muted);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 3px 10px;
+      cursor: pointer;
+      transition: color .2s, border-color .2s;
+    }
+    .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+
+    /* ── Callout boxes ─────────────────────────── */
+    .callout {
+      padding: 14px 18px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      margin: 18px 0;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .callout-icon { flex-shrink: 0; font-size: 1.1rem; margin-top: 1px; }
+
+    .callout.warning {
+      background: rgba(255, 107, 53, .08);
+      border: 1px solid rgba(255, 107, 53, .25);
+      color: var(--accent2);
+    }
+    .callout.warning strong { color: var(--accent); }
+
+    .callout.info {
+      background: rgba(96, 165, 250, .08);
+      border: 1px solid rgba(96, 165, 250, .25);
+      color: #93c5fd;
+    }
+    .callout.info strong { color: var(--blue); }
+
+    .callout.tip {
+      background: rgba(61, 220, 132, .08);
+      border: 1px solid rgba(61, 220, 132, .25);
+      color: #6ee7b7;
+    }
+    .callout.tip strong { color: var(--green); }
+
+    /* ── Steps list ─────────────────────────── */
+    .steps-list {
+      list-style: none;
+      padding: 0;
+      counter-reset: step-counter;
+    }
+
+    .steps-list li {
+      counter-increment: step-counter;
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .steps-list li::before {
+      content: counter(step-counter);
+      min-width: 28px;
+      height: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    /* ── Footer ─────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px;
+      text-align: center;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* ── Responsive ─────────────────────────── */
+    @media (max-width: 720px) {
+      .page-wrap {
+        grid-template-columns: 1fr;
+        padding: 36px 18px 80px;
+      }
+      .toc { display: none; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header>
+  <nav>
+    <a href="index.html" class="logo">
+      <div class="logo-mark">&lt;/&gt;</div>
+      Open Code
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html#opencode">OpenCode 소개</a></li>
+      <li><a href="guide.html">설치 가이드</a></li>
+      <li><a href="openrouter-guide.html">비용 최적화</a></li>
+      <li><a href="index.html#topics">주제</a></li>
+    </ul>
+    <span class="nav-pill">Windows</span>
+  </nav>
+</header>
+
+<!-- ══════════════ MAIN ══════════════ -->
+<div class="page-wrap">
+
+  <!-- TOC Sidebar -->
+  <aside class="toc">
+    <p class="toc-title">// 목차</p>
+    <ul class="toc-list">
+      <li><a href="#auth-location">1. auth.json 위치</a></li>
+      <li><a href="#explorer-nav" class="toc-sub">└ 파일 탐색기로 찾기</a></li>
+      <li><a href="#hidden-files" class="toc-sub">└ 숨김 파일 표시</a></li>
+      <li><a href="#file-content">2. 파일 내용</a></li>
+      <li><a href="#security">3. 보안 주의사항</a></li>
+    </ul>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="content">
+    <a href="index.html" class="back-btn">← 홈으로 돌아가기</a>
+
+    <p class="page-eyebrow">// Windows 11 파일 위치</p>
+    <h1 class="page-title">🪟 Windows 11에서의<br>파일 위치</h1>
+    <p class="page-lead">
+      <strong>OpenCode</strong>를 Windows 11에서 사용할 때 꼭 알아야 할 설정 파일 위치를 정리합니다.
+      특히 <code>/connect</code> 명령어로 저장된 인증 정보 파일인 <code>auth.json</code>의
+      경로와 접근 방법을 설명합니다.
+    </p>
+
+    <!-- ① auth.json 위치 -->
+    <section class="guide-section" id="auth-location">
+      <h2>
+        <span class="sec-badge">1</span>
+        auth.json 파일 위치
+      </h2>
+
+      <p>
+        <code>/connect</code> 명령어로 설정한 API 키, OAuth 토큰 등의 인증 정보는
+        아래 경로의 <code>auth.json</code> 파일에 저장됩니다.
+      </p>
+
+      <h3>환경 변수 경로</h3>
+      <div class="code-wrap">
+        <pre>%USERPROFILE%\.local\share\opencode\auth.json</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+
+      <h3>실제 경로 예시</h3>
+      <div class="code-wrap">
+        <pre>C:\Users\사용자이름\.local\share\opencode\auth.json</pre>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ️</span>
+        <div>
+          <strong>사용자이름</strong>은 본인의 Windows 계정 이름으로 바꾸면 됩니다.
+          예를 들어 계정 이름이 <code>john</code>이라면
+          <code>C:\Users\john\.local\share\opencode\auth.json</code>이 됩니다.
+        </div>
+      </div>
+
+      <!-- 파일 탐색기로 찾기 -->
+      <h3 id="explorer-nav">파일 탐색기에서 바로 이동하기</h3>
+      <p>
+        Windows 파일 탐색기의 <strong>주소창</strong>에 아래 경로를 직접 입력하면
+        해당 폴더로 바로 이동할 수 있습니다.
+      </p>
+      <div class="code-wrap">
+        <pre>%USERPROFILE%\.local\share\opencode</pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <div>
+          파일 탐색기를 열고 상단 주소창을 클릭한 뒤 위 경로를 붙여넣고 <strong>Enter</strong> 키를 누르세요.
+          Windows가 환경 변수를 자동으로 해석하여 실제 폴더로 이동합니다.
+        </div>
+      </div>
+
+      <!-- 숨김 파일 표시 -->
+      <h3 id="hidden-files">숨김 파일 표시 설정</h3>
+      <p>
+        <code>.local</code> 폴더는 점(<code>.</code>)으로 시작하는 <strong>숨김 폴더</strong>입니다.
+        보이지 않는다면 파일 탐색기에서 숨김 항목 표시를 활성화해야 합니다.
+      </p>
+
+      <ol class="steps-list">
+        <li>파일 탐색기를 엽니다.</li>
+        <li>상단 메뉴에서 <strong>"보기"</strong>를 클릭합니다.</li>
+        <li><strong>"표시"</strong> 메뉴를 펼칩니다.</li>
+        <li><strong>"숨김 항목"</strong> 체크박스를 활성화합니다.</li>
+      </ol>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ️</span>
+        <div>
+          Windows 11에서는 파일 탐색기 상단 리본 대신 <strong>더보기(···)</strong> 버튼 →
+          <strong>옵션</strong> → <strong>보기</strong> 탭에서도 숨김 파일 표시 옵션을 찾을 수 있습니다.
+        </div>
+      </div>
+    </section>
+
+    <!-- ② 파일 내용 -->
+    <section class="guide-section" id="file-content">
+      <h2>
+        <span class="sec-badge">2</span>
+        auth.json 파일 내용
+      </h2>
+
+      <p>
+        <code>auth.json</code> 파일에는 <code>/connect</code> 명령어로 설정한
+        API 키, OAuth 토큰 등의 인증 정보가 <strong>JSON 형식</strong>으로 저장되어 있습니다.
+      </p>
+
+      <div class="code-wrap">
+        <pre>{
+  <span class="ck">"anthropic"</span>: {
+    <span class="ck">"apiKey"</span>: <span class="st">"sk-ant-..."</span>
+  },
+  <span class="ck">"openai"</span>: {
+    <span class="ck">"apiKey"</span>: <span class="st">"sk-..."</span>
+  }
+}</pre>
+      </div>
+
+      <p>
+        연결한 AI 제공자에 따라 파일 내용이 다를 수 있습니다.
+        OpenRouter, GitHub Copilot, Gemini 등 각 제공자의 인증 정보가
+        별도 키로 저장됩니다.
+      </p>
+
+      <h3>파일 내용 확인 (PowerShell)</h3>
+      <p>PowerShell에서 아래 명령어로 파일 내용을 직접 확인할 수 있습니다.</p>
+      <div class="code-wrap">
+        <pre><span class="kw">Get-Content</span> <span class="st">"$env:USERPROFILE\.local\share\opencode\auth.json"</span></pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+
+      <h3>파일 내용 확인 (명령 프롬프트)</h3>
+      <div class="code-wrap">
+        <pre><span class="kw">type</span> <span class="st">"%USERPROFILE%\.local\share\opencode\auth.json"</span></pre>
+        <button class="copy-btn" onclick="copyCode(this)">copy</button>
+      </div>
+    </section>
+
+    <!-- ③ 보안 주의사항 -->
+    <section class="guide-section" id="security">
+      <h2>
+        <span class="sec-badge">3</span>
+        보안 주의사항
+      </h2>
+
+      <div class="callout warning">
+        <span class="callout-icon">⚠️</span>
+        <div>
+          <strong>중요:</strong> <code>auth.json</code> 파일에는 민감한 인증 정보(API 키, 토큰)가
+          포함되어 있습니다. 아래 사항을 반드시 준수하세요.
+        </div>
+      </div>
+
+      <ul>
+        <li>
+          <strong>Git 저장소에 업로드하지 마세요.</strong>
+          실수로 커밋되지 않도록 <code>.gitignore</code>에 해당 경로를 추가하거나,
+          프로젝트 폴더 밖에 위치하도록 관리하세요.
+        </li>
+        <li>
+          <strong>다른 사람과 공유하지 마세요.</strong>
+          API 키가 유출되면 타인이 여러분의 계정으로 비용을 발생시킬 수 있습니다.
+        </li>
+        <li>
+          <strong>클라우드 스토리지 동기화 폴더에 두지 마세요.</strong>
+          OneDrive, Google Drive 등과 동기화되는 폴더에 파일이 위치한다면
+          의도치 않게 외부로 노출될 수 있습니다.
+        </li>
+        <li>
+          <strong>키가 유출된 경우 즉시 재발급하세요.</strong>
+          각 AI 제공자의 콘솔에서 기존 API 키를 폐기하고 새 키를 발급받은 뒤
+          <code>/connect</code> 명령어로 재설정하세요.
+        </li>
+      </ul>
+
+      <h3>gitignore 예시</h3>
+      <p>프로젝트 폴더 내에 <code>auth.json</code>이 위치할 경우 아래처럼 무시 처리하세요.</p>
+      <div class="code-wrap">
+        <pre><span class="cm"># OpenCode 인증 파일 — 절대 커밋하지 마세요</span>
+.local/share/opencode/auth.json
+auth.json</pre>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer>
+  <p style="margin-bottom:8px;">
+    <a href="index.html">홈</a> ·
+    <a href="guide.html">설치 가이드</a> ·
+    <a href="openrouter-guide.html">비용 최적화</a>
+  </p>
+  <p>Open Code — 바이브 코딩을 위한 오픈 기술</p>
+</footer>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.closest('.code-wrap').querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText).then(() => {
+      btn.textContent = 'copied!';
+      setTimeout(() => btn.textContent = 'copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
